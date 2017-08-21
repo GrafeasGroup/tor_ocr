@@ -22,14 +22,14 @@ can be, though there are some external requirements.
 ## Installation
 
 ```
-$ git clone https://github.com/TranscribersOfReddit/ToR_Archivist.git tor-archivist
-$ pip install tor-archivist/
+$ git clone https://github.com/TranscribersOfReddit/ToR_OCR.git tor-ocr
+$ pip install --process-dependency-links tor-ocr/
 ```
 
 OR
 
 ```
-$ pip install 'git+https://github.com/TranscribersOfReddit/ToR_Archivist.git@master#egg=tor_archivist'
+$ pip install --process-dependency-links 'git+https://github.com/TranscribersOfReddit/ToR_OCR.git@master#egg=tor_ocr'
 ```
 
 ## High-level functionality
