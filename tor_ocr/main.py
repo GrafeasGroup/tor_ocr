@@ -1,22 +1,19 @@
 import logging
 import os
-import sys
 import time
 import urllib
 from tesserocr import PyTessBaseAPI
 
-import prawcore
 import wget
-from praw import Reddit
+from tor_core.config import config
+# noinspection PyProtectedMember
+from tor_core.helpers import _
+from tor_core.helpers import clean_id
+from tor_core.helpers import run_until_dead
+from tor_core.initialize import build_bot
 
-from tor.core.config import config
-from tor.core.initialize import configure_logging
-from tor.core.initialize import configure_redis
-from tor.core.initialize import configure_tor
-from tor.helpers.misc import _
-from tor.helpers.misc import explode_gracefully
-from tor.helpers.reddit_ids import clean_id
-from tor.strings.ocr import base_comment
+from tor_ocr import __version__
+from tor_ocr.strings import base_comment
 
 """
 General notes for implementation.
@@ -80,106 +77,82 @@ def chunks(s, n):
 
 
 def run(config):
-    while True:
-        try:
-            time.sleep(config.ocr_delay)
-            new_post = config.redis.lpop('ocr_ids')
-            if new_post is None:
-                logging.debug('No post found. Sleeping.')
-                # nothing new in the queue. Wait and try again.
-                continue
 
-            # We got something!
-            new_post = new_post.decode('utf-8')
-            logging.info(
-                'Found a new post, ID {}'.format(new_post)
-            )
-            image_post = config.r.submission(id=clean_id(new_post))
+    time.sleep(config.ocr_delay)
+    new_post = config.redis.lpop('ocr_ids')
+    if new_post is None:
+        logging.debug('No post found. Sleeping.')
+        # nothing new in the queue. Wait and try again.
+        # Yes, I know this is outside a loop. It will be run inside a loop
+        # by tor_core.
+        return
 
-            # download image for processing
-            # noinspection PyUnresolvedReferences
-            try:
-                filename = wget.download(image_post.url)
-            except urllib.error.HTTPError:
-                # what if the post has been deleted? Ignore it and continue.
-                continue
+    # We got something!
+    new_post = new_post.decode('utf-8')
+    logging.info(
+        'Found a new post, ID {}'.format(new_post)
+    )
+    image_post = config.r.submission(id=clean_id(new_post))
 
-            try:
-                result = process_image(filename)
-            except RuntimeError:
-                logging.warning(
-                    'Either we hit an imgur album or no text was returned.'
-                )
-                os.remove(filename)
-                continue
+    # download image for processing
+    # noinspection PyUnresolvedReferences
+    try:
+        filename = wget.download(image_post.url)
+    except urllib.error.HTTPError:
+        # what if the post has been deleted? Ignore it and continue.
+        return
 
-            logging.debug('result: {}'.format(result))
+    try:
+        result = process_image(filename)
+    except RuntimeError:
+        logging.warning(
+            'Either we hit an imgur album or no text was returned.'
+        )
+        os.remove(filename)
+        return
 
-            # delete the image; we don't want to clutter up the hdd
-            os.remove(filename)
+    logging.debug('result: {}'.format(result))
 
-            if not result:
-                logging.info('Result was none! Skipping!')
-                # we don't want orphan entries
-                config.redis.delete(new_post)
-                continue
+    # delete the image; we don't want to clutter up the HDD
+    os.remove(filename)
 
-            tor_post_id = config.redis.get(new_post).decode('utf-8')
+    if not result:
+        logging.info('Result was none! Skipping!')
+        # we don't want orphan entries
+        config.redis.delete(new_post)
+        return
 
-            logging.info(
-                'posting transcription attempt for {} on {}'.format(
-                    new_post, tor_post_id
-                )
-            )
+    tor_post_id = config.redis.get(new_post).decode('utf-8')
 
-            tor_post = config.r.submission(id=clean_id(tor_post_id))
+    logging.info(
+        'posting transcription attempt for {} on {}'.format(
+            new_post, tor_post_id
+        )
+    )
 
-            thing_to_reply_to = tor_post.reply(_(base_comment))
-            for chunk in chunks(result, 9000):
-                # end goal: if something is over 9000 characters long, we
-                # should post a top level comment, then keep replying to
-                # the comments we make until we run out of chunks.
-                thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
+    tor_post = config.r.submission(id=clean_id(tor_post_id))
 
-            config.redis.delete(new_post)
+    thing_to_reply_to = tor_post.reply(_(base_comment))
+    for chunk in chunks(result, 9000):
+        # end goal: if something is over 9000 characters long, we
+        # should post a top level comment, then keep replying to
+        # the comments we make until we run out of chunks.
+        thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
 
-        except (
-            prawcore.exceptions.RequestException,
-            prawcore.exceptions.ServerError
-        ) as e:
-            logging.warning(
-                '{} - Issue communicating with Reddit. Sleeping for 60s!'
-                ''.format(e)
-            )
-            time.sleep(60)
+    config.redis.delete(new_post)
 
 
 def main():
-    '''
-    Console scripts entry point for OCR Bot
-    '''
+    """
+        Console scripts entry point for OCR Bot
+    """
+
+    build_bot('bot_ocr',
+              __version__,
+              full_name='u/transcribot',
+              log_name='ocr.log')
     config.ocr_delay = 10
-    config.r = Reddit('bot_ocr')  # loaded from local praw.ini config file
-    configure_logging(config, log_name='ocr.log')
-    logging.basicConfig(
-        filename='ocr.log'
-    )
-
-    config.redis = configure_redis()
-
-    # the subreddit object shortcut for TranscribersOfReddit
-    tor = configure_tor(config.r, config)
-
-    try:
-        run(config)
-
-    except KeyboardInterrupt:
-        logging.info('Received keyboard interrupt! Shutting down!')
-        sys.exit(0)
-
-    except Exception as e:
-        explode_gracefully('u/transcribot', e, tor)
-
+    run_until_dead(run)
 
 if __name__ == '__main__':
     main()
