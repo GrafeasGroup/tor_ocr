@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/TranscribersOfReddit/ToR_Archivist.png?label=ready&title=Ready)](http://waffle.io/TranscribersOfReddit/ToR_Archivist)
+[![Stories in Ready](https://badge.waffle.io/TranscribersOfReddit/ToR_OCR.png?label=ready&title=Ready)](http://waffle.io/TranscribersOfReddit/ToR_OCR)
 
 # Contributing
 
