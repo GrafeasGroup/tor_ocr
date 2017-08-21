@@ -154,5 +154,6 @@ def main():
     config.ocr_delay = 10
     run_until_dead(run)
 
+
 if __name__ == '__main__':
     main()
