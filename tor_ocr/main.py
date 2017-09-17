@@ -98,8 +98,12 @@ def run(config):
     # noinspection PyUnresolvedReferences
     try:
         filename = wget.download(image_post.url)
-    except urllib.error.HTTPError:
-        # what if the post has been deleted? Ignore it and continue.
+    except (
+            urllib.error.HTTPError,
+            urllib.error.URLError
+    ):
+        # what if the post has been deleted or we don't know what it is?
+        # Ignore it and continue.
         return
 
     try:
