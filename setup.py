@@ -21,7 +21,7 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import shlex
-        # import here, cause outside the eggs aren't loaded
+        # import here, because outside the eggs aren't loaded
         import pytest
         errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
@@ -35,10 +35,19 @@ def long_description():
         return f.read()
 
 
+test_deps = [
+    'pytest',
+    'pytest-cov',
+]
+dev_helper_deps = [
+    'better-exceptions',
+]
+
+
 setup(
     name='tor_ocr',
     version=__version__,
-    description='',
+    description='An AI attempting to transcribe contents of /r/TranscribersOfReddit',
     long_description=long_description(),
     url='https://github.com/TranscribersOfReddit/ToR_OCR',
     author='Joe Kaufeld',
@@ -56,29 +65,25 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     keywords='',
-    packages=find_packages(exclude=['test*', 'bin/*']),
+    packages=find_packages(exclude=['test', 'test.*', '*.test.*', '*.test']),
+    cmdclass={'test': PyTest},
     test_suite='test',
     entry_points={
         'console_scripts': [
             'tor-apprentice = tor_ocr.main:main',
         ],
     },
-    tests_require=[
-        'pytest',
-    ],
-    cmdclass={'test': PyTest},
+    extras_require={
+        'dev': test_deps + dev_helper_deps,
+    },
+    tests_require=test_deps,
     install_requires=[
-        'praw==5.0.1',
-        'redis<3.0.0',
-        'tor_core>=0.2.0,<0.3.0',
-        'addict',
+        'tor_core',
         'tesserocr',
-        'wget',
-        'sh',
-        'bugsnag',
         'cython',  # WORKAROUND: 'tesserocr' only sometimes installs this dependency
+        'wget',
     ],
     dependency_links=[
-        'git+https://github.com/TranscribersOfReddit/tor_core.git@master#egg=tor_core-0.2.0',
+        'git+https://github.com/TranscribersOfReddit/tor_core.git@master#egg=tor_core-0',
     ],
 )
