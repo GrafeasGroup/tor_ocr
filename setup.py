@@ -66,6 +66,7 @@ setup(
     ],
     keywords='',
     packages=find_packages(exclude=['test', 'test.*', '*.test.*', '*.test']),
+    zip_safe=True,
     cmdclass={'test': PyTest},
     test_suite='test',
     entry_points={
