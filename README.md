@@ -1,5 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/TranscribersOfReddit/ToR_OCR.png?label=ready&title=Ready)](http://waffle.io/TranscribersOfReddit/ToR_OCR)
 
+[![BugSnag](https://img.shields.io/badge/errors--hosted--by-BugSnag-blue.svg)](https://www.bugsnag.com/open-source/)
+
 # Apprentice Bot - Transcribers Of Reddit
 
 This is the source code for Apprentice Bot (`/u/transcribot`). It forms one part
