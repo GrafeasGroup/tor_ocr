@@ -67,10 +67,10 @@ def chunks(s, n):
         yield s[start:(start + n)]
 
 
-# stolen from https://github.com/Zaargh/ocr.space_code_example/blob/master/ocrspace_example.py
 def ocr_space_url(url, overlay=False, api_key=os.getenv("OCR_API_KEY", "helloworld"), language='eng'):
     """ OCR.space API request with remote file.
         Python3.5 - not tested on 2.7
+        This code is stolen from https://github.com/Zaargh/ocr.space_code_example/blob/master/ocrspace_example.py
     :param url: Image url.
     :param overlay: Is OCR.space overlay required in your response.
                     Defaults to False.
