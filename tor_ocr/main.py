@@ -2,9 +2,9 @@ import logging
 import os
 import time
 import urllib
-from tesserocr import PyTessBaseAPI
+import requests
+import json
 
-import wget
 from tor_core.config import config
 # noinspection PyProtectedMember
 from tor_core.helpers import _
@@ -42,28 +42,19 @@ Bot:
 """
 
 
-def process_image(local_file):
-    with PyTessBaseAPI() as api:
-        api.SetImageFile(local_file)
-        text = api.GetUTF8Text()
+def process_image(image_url):
+    # If you feed it a regular image with no text, more often than not
+    # you'll get newlines and spaces back. We strip those out to see if
+    # we actually got anything of substance.
 
-        confidences = api.AllWordConfidences()
-        if not confidences or len(confidences) == 0:
-            # we have an image, but it *really* couldn't find anything, not
-            # even false positives.
-            return None
+    json_result = json.loads(ocr_space_url(image_url))
 
-        logging.debug('Average of confidences: {}'.format(
-            sum(confidences) / len(confidences))
-        )
+    text = json_result['ParsedText']
 
-        # If you feed it a regular image with no text, more often than not
-        # you'll get newlines and spaces back. We strip those out to see if
-        # we actually got anything of substance.
-        if text.strip() != '':
-            return text
-        else:
-            return None
+    if text.strip() != '':
+        return text
+    else:
+        return None
 
 
 def chunks(s, n):
@@ -76,8 +67,33 @@ def chunks(s, n):
         yield s[start:(start + n)]
 
 
-def run(config):
+# stolen from https://github.com/Zaargh/ocr.space_code_example/blob/master/ocrspace_example.py
+def ocr_space_url(url, overlay=False, api_key=os.getenv("OCR_API_KEY", "helloworld"), language='eng'):
+    """ OCR.space API request with remote file.
+        Python3.5 - not tested on 2.7
+    :param url: Image url.
+    :param overlay: Is OCR.space overlay required in your response.
+                    Defaults to False.
+    :param api_key: OCR.space API key.
+                    Defaults to environment variable "OCR_API_KEY", if it doesn't exist, it will use "helloworld"
+    :param language: Language code to be used in OCR.
+                    List of available language codes can be found on https://ocr.space/OCRAPI
+                    Defaults to 'en'.
+    :return: Result in JSON format.
+    """
 
+    payload = {'url': url,
+               'isOverlayRequired': overlay,
+               'apikey': api_key,
+               'language': language,
+               }
+    r = requests.post('https://api.ocr.space/parse/image',
+                      data=payload,
+                      )
+    return r.content.decode()
+
+
+def run(config):
     time.sleep(config.ocr_delay)
     new_post = config.redis.lpop('ocr_ids')
     if new_post is None:
@@ -97,7 +113,7 @@ def run(config):
     # download image for processing
     # noinspection PyUnresolvedReferences
     try:
-        filename = wget.download(image_post.url)
+        url = image_post.url
     except (
             urllib.error.HTTPError,
             urllib.error.URLError
@@ -107,18 +123,16 @@ def run(config):
         return
 
     try:
-        result = process_image(filename)
+        result = process_image(url)
     except RuntimeError:
         logging.warning(
             'Either we hit an imgur album or no text was returned.'
         )
-        os.remove(filename)
         return
 
     logging.debug('result: {}'.format(result))
 
     # delete the image; we don't want to clutter up the HDD
-    os.remove(filename)
 
     if not result:
         logging.info('Result was none! Skipping!')
