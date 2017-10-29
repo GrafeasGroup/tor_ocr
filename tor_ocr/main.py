@@ -1,10 +1,10 @@
+import json
 import logging
 import os
 import time
 import urllib
-import requests
-import json
 
+import requests
 from tor_core.config import config
 # noinspection PyProtectedMember
 from tor_core.helpers import _
@@ -49,12 +49,42 @@ def process_image(image_url):
 
     json_result = json.loads(ocr_space_url(image_url))
 
-    text = json_result['ParsedText']
+    result = {
+        'text': json_result['ParsedText'],
+        'exit_code': json_result['OCRExitCode'],
+        'error_on_processing': json_result['IsErroredOnProcessing'],
+        'error_message': json_result['ErrorMessage'],
+        'error_details': json_result['ErrorDetails'],
+        'process_time_in_ms': json_result['ProcessingTimeInMilliseconds'],
+    }
 
-    if text.strip() != '':
-        return text
-    else:
+    error_codes = {
+        1: 'success',
+        0: 'file not found',
+        -10: 'OCR engine parse error',
+        -20: 'timeout',
+        -30: 'validation error',
+        -99: 'UNKNOWN ERROR',
+    }
+
+    if result['text'].strip() == '':
         return None
+
+    if result['exit_code'] != 1 or result['error_on_processing']:
+        logging.warning(
+            'OCR Error encountered: ' +
+            error_codes[result['exit_code']] +
+            '. Error message: ' +
+            result['error_message'] +
+            '. Error details: ' +
+            result['error_details'] +
+            '.'
+        )
+
+        return None
+
+    else:
+        return result['text']
 
 
 def chunks(s, n):
@@ -69,7 +99,7 @@ def chunks(s, n):
 
 def ocr_space_url(url,
                   overlay=False,
-                  api_key=os.getenv("OCR_API_KEY", "helloworld")):
+                  api_key=os.getenv('OCR_API_KEY', 'helloworld')):
     """
     OCR.space API request with remote file.
     Python3.5 - not tested on 2.7
@@ -151,8 +181,11 @@ def run(config):
 
     tor_post = config.r.submission(id=clean_id(tor_post_id))
 
-    thing_to_reply_to = tor_post.reply(_(base_comment))
-    for chunk in chunks(result, 9000):
+    thing_to_reply_to = tor_post.reply(
+        _(base_comment.format(result['process_time_in_ms'] / 1000))
+    )
+
+    for chunk in chunks(result['text'], 9000):
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
