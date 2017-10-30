@@ -142,8 +142,6 @@ def run(config):
 
     logging.debug('result: {}'.format(result))
 
-    # delete the image; we don't want to clutter up the HDD
-
     if not result:
         logging.info('Result was none! Skipping!')
         # we don't want orphan entries
