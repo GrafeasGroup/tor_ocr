@@ -4,5 +4,7 @@ base_comment = (
     'At the very least, hopefully it will serve as a decent starting point '
     'for your work!\n\nPlease note that any formatting instructions above '
     'override whatever I provide, so please format my content accordingly '
-    'if you choose to use it.'
+    'if you choose to use it. '
+    '&nbsp; '
+    'Process time: {}'
 )
