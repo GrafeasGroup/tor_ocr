@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import time
-import urllib
 
 import requests
 from tor_core.config import config
@@ -13,6 +12,7 @@ from tor_core.helpers import run_until_dead
 from tor_core.initialize import build_bot
 
 from tor_ocr import __version__
+from tor_ocr.errors import OCRError
 from tor_ocr.strings import base_comment
 
 """
@@ -41,47 +41,34 @@ Bot:
     u_tor_post_id.reply(ocr_magic)
 """
 
+# "helloworld" is a valid API key, however use it sparingly
+__OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
+
 
 def process_image(image_url):
-    # If you feed it a regular image with no text, more often than not
-    # you'll get newlines and spaces back. We strip those out to see if
-    # we actually got anything of substance.
-
+    """
+    Processes an image with OCR, using ocr.space
+    :param image_url: a string url of what you need OCRed
+    :return: A dictionary containing several values, most importantly 'text'
+    """
     json_result = json.loads(ocr_space_url(image_url))
 
     result = {
         'text': json_result['ParsedText'],
-        'exit_code': json_result['OCRExitCode'],
+        'exit_code': int(json_result['OCRExitCode']),  # this shouldn't fail
         'error_on_processing': json_result['IsErroredOnProcessing'],
         'error_message': json_result['ErrorMessage'],
         'error_details': json_result['ErrorDetails'],
         'process_time_in_ms': json_result['ProcessingTimeInMilliseconds'],
     }
 
-    error_codes = {
-        1: 'success',
-        0: 'file not found',
-        -10: 'OCR engine parse error',
-        -20: 'timeout',
-        -30: 'validation error',
-        -99: 'UNKNOWN ERROR',
-    }
-
+    # If there's no text, we get back "", but just in case it's just whitespace,
+    # we don't want it.
     if result['text'].strip() == '':
         return None
 
     if result['exit_code'] != 1 or result['error_on_processing']:
-        logging.warning(
-            'OCR Error encountered: ' +
-            error_codes[result['exit_code']] +
-            '. Error message: ' +
-            result['error_message'] +
-            '. Error details: ' +
-            result['error_details'] +
-            '.'
-        )
-
-        return None
+        raise OCRError(result)
 
     else:
         return result['text']
@@ -97,9 +84,7 @@ def chunks(s, n):
         yield s[start:(start + n)]
 
 
-def ocr_space_url(url,
-                  overlay=False,
-                  api_key=os.getenv('OCR_API_KEY', 'helloworld')):
+def ocr_space_url(url, overlay=False, api_key=__OCR_API_KEY__):
     """
     OCR.space API request with remote file.
     Python3.5 - not tested on 2.7
@@ -121,6 +106,10 @@ def ocr_space_url(url,
     result = requests.post('https://api.ocr.space/parse/image',
                            data=payload,
                            )
+
+    # crash and burn if the API is down, or similar :)
+    result.raise_for_status()
+
     return result.json()
 
 
@@ -141,17 +130,7 @@ def run(config):
     )
     image_post = config.r.submission(id=clean_id(new_post))
 
-    # download image for processing
-    # noinspection PyUnresolvedReferences
-    try:
-        url = image_post.url
-    except (
-            urllib.error.HTTPError,
-            urllib.error.URLError
-    ):
-        # what if the post has been deleted or we don't know what it is?
-        # Ignore it and continue.
-        return
+    url = image_post.url
 
     try:
         result = process_image(url)
