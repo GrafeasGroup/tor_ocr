@@ -51,7 +51,7 @@ def process_image(image_url):
     :param image_url: a string url of what you need OCRed
     :return: A dictionary containing several values, most importantly 'text'
     """
-    json_result = json.loads(ocr_space_url(image_url))
+    json_result = decode_image_from_url(image_url)
 
     result = {
         'text': json_result['ParsedText'],
@@ -84,7 +84,7 @@ def chunks(s, n):
         yield s[start:(start + n)]
 
 
-def ocr_space_url(url, overlay=False, api_key=__OCR_API_KEY__):
+def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     """
     OCR.space API request with remote file.
     Python3.5 - not tested on 2.7
@@ -128,15 +128,13 @@ def run(config):
     logging.info(
         'Found a new post, ID {}'.format(new_post)
     )
-    image_post = config.r.submission(id=clean_id(new_post))
-
-    url = image_post.url
+    url = config.r.submission(id=clean_id(new_post)).url
 
     try:
         result = process_image(url)
-    except RuntimeError:
+    except OCRError as e:
         logging.warning(
-            'Either we hit an imgur album or no text was returned.'
+            'There was an OCR Error: ' + e
         )
         return
 
