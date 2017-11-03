@@ -10,5 +10,5 @@ class OCRError(Exception):
     }
 
     def __init__(self, result):
-        super(self.__class__, self).__init__(self.CODES[result['exit_code']])
+        super(OCRError, self).__init__(self.CODES[result['exit_code']])
         self.result = result
