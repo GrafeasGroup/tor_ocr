@@ -1,18 +1,20 @@
-[![Stories in Ready](https://badge.waffle.io/TranscribersOfReddit/ToR_OCR.png?label=ready&title=Ready)](http://waffle.io/TranscribersOfReddit/ToR_OCR)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/TranscribersOfReddit/TranscribersOfReddit.svg?columns=all)](http://waffle.io/TranscribersOfReddit/TranscribersOfReddit)
 [![BugSnag](https://img.shields.io/badge/errors--hosted--by-Bugsnag-blue.svg)](https://www.bugsnag.com/open-source/)
 
 # Apprentice Bot - Transcribers Of Reddit
 
-This is the source code for Apprentice Bot (`/u/transcribot`). It forms one part
-of the team that assists in the running or /r/TranscribersOfReddit (ToR), which
-is privileged to have the incredibly important job of organizing crowd-sourced
-transcriptions of images, video, and audio.
+This is the source code for a helper bot, making attempts at transcribing content as
+it is posted to the subreddit /r/TranscribersOfReddit, a community dedicated to
+transcribing images, audio, and video. It acts under the username "/u/transcribot".
 
-As a whole, the ToR bots are designed to be as light on local resources as they
-can be, though there are some external requirements.
+This bot is still in training and might not be able to recognize everything it
+attempts. Some transcriptions might be complete trash, but the hope is that it will
+be a start to a more legitimate, volunteer-written transcription.
 
-- Redis (tracking completed posts and queue system)
-- Tesseract (OCR solution)
+## Resources
+
+Redis (tracking completed posts and queue system)
+Tesseract (OCR solution)
 
 > **NOTE:**
 >
@@ -23,14 +25,15 @@ can be, though there are some external requirements.
 ## Installation
 
 ```
-$ git clone https://github.com/TranscribersOfReddit/ToR_OCR.git tor-ocr
-$ pip install --process-dependency-links tor-ocr/
+$ git clone https://github.com/TranscribersOfReddit/ToR_OCR.git tor_ocr
+$ cd tor_ocr/
+$ pip install --process-dependency-links .
 ```
 
 OR
 
 ```
-$ pip install --process-dependency-links 'git+https://github.com/TranscribersOfReddit/ToR_OCR.git@master#egg=tor_ocr'
+$ pip install --process-dependency-links 'git+https://github.com/TranscribersOfReddit/ToR_OCR.git@master#egg=tor_ocr-0'
 ```
 
 ## High-level functionality
@@ -41,8 +44,10 @@ Monitoring daemon (via Redis queue):
   - Download image
   - OCR the image
   - If OCR successful:
-    - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks
+    - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks, replying to previous comment when [over 9000][over-9000] characters
   - Delete local copy of image
+
+[over-9000]: https://tenor.com/view/dragonball-z-super-saiyan-charging-yelling-gif-4987448
 
 ### Running Apprentice Bot
 

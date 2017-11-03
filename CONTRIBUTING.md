@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/TranscribersOfReddit/ToR_OCR.png?label=ready&title=Ready)](http://waffle.io/TranscribersOfReddit/ToR_OCR)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/TranscribersOfReddit/TranscribersOfReddit.svg?columns=all)](http://waffle.io/TranscribersOfReddit/TranscribersOfReddit)
 
 # Contributing
 
@@ -14,43 +14,59 @@ Do your best to check as many of these boxes as you can and everything will be f
 ## Issues
 
 Any bugs you find, features you want to request, or questions you have should go in the
-repository's [issues section](https://github.com/TranscribersOfReddit/ToR_Archivist/issues).
+repository's [issues section](https://github.com/TranscribersOfReddit/ToR_OCR/issues).
 Please, be kind and search through both open and closed issues to make sure your question
 or bug report hasn't already been posted and resolved.
 
 ## Development
 
-After checking out the repo, run `bin/run setup` to install native dependencies.
+Initial setup:
 
-To install this package locally, setup a virtualenv environment and run `pip install -e .`
-from the project root. To make sure you have everything setup correctly, run `bin/run test`
-and it _should_ pass entirely.
+```bash
+# Clone the repository
+$ git clone git@github.com:TranscribersOfReddit/ToR_OCR.git tor_ocr
+$ cd ./tor_ocr
 
-In case you get tired of prefixing `bin/` to the `run` script here, [Tim Pope's method](https://twitter.com/tpope/status/165631968996900865)
-of safely adding a script to your PATH is recommended.
+# Setup sandbox
+$ virtualenv --no-site-packages --python=python3 venv
+$ source ./venv/bin/activate
+
+# Install the project in "editable" mode
+$ pip install --process-dependency-links -e .[dev]
+```
+
+In case there are any tests, they would be run by calling `python setup.py test`.
 
 ## Testing
 
-This project has (some) automated test coverage, so be sure to check that tests are passing
-_before_ you begin development. Our emphasis is on stability here, so if tests aren't passing,
-that's a bug.
+This project is expected to have automated test coverage, so be sure to check that tests
+are passing _before_ you begin development. Our emphasis is on stability here, so if tests
+aren't passing, that's a bug.
 
 ### Stability
 
 As noted before, make sure tests are passing before starting. If you have difficulty getting
 to that stable, initial state, reach out by opening an issue (see [Issues](#Issues) above).
-This is considered a failing by the maintainers if instructions are less than absolutely
-clear. Any feedback is helpful here!
+This is considered a failure by the maintainers if instructions are less than absolutely
+clear. Feedback is very helpful here!
 
 ### Writing tests
 
-Tests are written using `pytest` because it allows for simple decorators to modify when to
-run certain tests and the output is much prettier than `unittest`. We invoke the full test
-suite by calling `bin/run test`.
+Tests are written using `pytest` for a variety of reasons. Some of which are:
 
-At the moment, the test suite should run quickly, but that won't always be the case. Running
+- easy assertions that an exception will be thrown and the message it contains
+- skipping some tests for stated reasons
+- marking some tests as expected to fail
+- colorized output compared to `unittest`
+
+We should be able to invoke the full test suite by calling either `python setup.py test` or
+`pytest` from the terminal.
+
+The test suite should run quickly at the moment, but that won't always be the case. Running
 individual tests with `pytest path/to/test/file.py` is also acceptable while actively
-developing. Please note: a pull request should always have a fully passing test suite.
+developing.
+
+> **NOTE:** a pull request should always have a fully passing test suite.
 
 ## Pull Requests
 
