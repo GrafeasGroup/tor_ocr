@@ -12,7 +12,6 @@ from tor_core.initialize import build_bot
 
 from tor_ocr import __version__
 from tor_ocr.errors import OCRError
-from tor_ocr.imgur import direct_links_from_imgur
 from tor_ocr.strings import base_comment
 
 """
