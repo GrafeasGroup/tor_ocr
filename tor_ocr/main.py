@@ -51,23 +51,30 @@ def process_image(image_url):
     :return: A dictionary containing several values, most importantly 'text'
     """
     json_result = decode_image_from_url(image_url)
+    try:
+        result = {
+            'text': json_result.get('ParsedResults')[0]['ParsedText'],
+            'exit_code': int(json_result['OCRExitCode']),  # this shouldn't fail
+            'error_on_processing': json_result['IsErroredOnProcessing'],
+            'error_message': json_result['ErrorMessage'],
+            'error_details': json_result['ErrorDetails'],
+            # ignores errors per file, we should only get one file ever anyway.
+            'process_time_in_ms': json_result['ProcessingTimeInMilliseconds'],
+        }
+    except KeyError:
+        error_result = {
+            'exit_code': json_result['exit_code']
+        }
+        raise OCRError(error_result)
 
-    result = {
-        'text': json_result['ParsedResults'][0]['ParsedText'],
-        'exit_code': int(json_result['OCRExitCode']),  # this shouldn't fail
-        'error_on_processing': json_result['IsErroredOnProcessing'],
-        'error_message': json_result['ErrorMessage'],  # ignores errors per file
-        'error_details': json_result['ErrorDetails'],  # we should only get one
-                                                       # file ever anyway
-        'process_time_in_ms': json_result['ProcessingTimeInMilliseconds'],
-    }
-
-    # If there's no text, we get back "", but just in case it's just whitespace,
-    # we don't want it.
+    # If there's no text, we  might get back "", but just in case it's just
+    # whitespace, we don't want it.
     if result['text'].strip() == '':
         return None
 
-    if result['exit_code'] != 1 or result['error_on_processing']:
+    if result['exit_code'] != 1 \
+            or result['error_on_processing'] \
+            or not result['text']:
         raise OCRError(result)
 
     else:
@@ -134,7 +141,7 @@ def run(config):
         result = process_image(url)
     except OCRError as e:
         logging.warning(
-            'There was an OCR Error: ' + e
+            'There was an OCR Error: ' + str(e)
         )
         return
 
