@@ -78,7 +78,7 @@ def process_image(image_url):
         raise OCRError(result)
 
     else:
-        return result['text']
+        return result
 
 
 def chunks(s, n):
