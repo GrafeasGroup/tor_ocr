@@ -184,6 +184,8 @@ def run(config):
                     '/u/', '\\/u/'
                 ).replace(
                     '/r/', '\\/r/'
+                ).replace(
+                    '>>', '\>\>'
                 )
             )
         )
