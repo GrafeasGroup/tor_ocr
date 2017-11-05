@@ -108,13 +108,16 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     :return: Result in JSON format.
     """
 
-    payload = {'url': url,
-               'isOverlayRequired': overlay,
-               'apikey': api_key,
-               }
-    result = requests.post('https://api.ocr.space/parse/image',
-                           data=payload,
-                           )
+    payload = {
+        'url': url,
+        'isOverlayRequired': overlay,
+        'apikey': api_key,
+    }
+
+    result = requests.post(
+        'https://api.ocr.space/parse/image',
+        data=payload,
+    )
 
     # crash and burn if the API is down, or similar :)
     result.raise_for_status()
@@ -173,7 +176,17 @@ def run(config):
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
-        thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
+        thing_to_reply_to = thing_to_reply_to.reply(
+            _(
+                chunk.replace(
+                    '\r\n', '\n\n'
+                ).replace(
+                    '/u/', '\\/u/'
+                ).replace(
+                    '/r/', '\\/r/'
+                )
+            )
+        )
 
     config.redis.delete(new_post)
 

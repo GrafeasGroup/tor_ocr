@@ -6,5 +6,5 @@ base_comment = (
     'override whatever I provide, so please format my content accordingly '
     'if you choose to use it. '
     '\n\n'
-    'Process time: {}'
+    'Process time: {}s'
 )
