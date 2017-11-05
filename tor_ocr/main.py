@@ -53,11 +53,12 @@ def process_image(image_url):
     json_result = decode_image_from_url(image_url)
 
     result = {
-        'text': json_result['ParsedText'],
+        'text': json_result['ParsedResults'][0]['ParsedText'],
         'exit_code': int(json_result['OCRExitCode']),  # this shouldn't fail
         'error_on_processing': json_result['IsErroredOnProcessing'],
-        'error_message': json_result['ErrorMessage'],
-        'error_details': json_result['ErrorDetails'],
+        'error_message': json_result['ErrorMessage'],  # ignores errors per file
+        'error_details': json_result['ErrorDetails'],  # we should only get one
+                                                       # file ever anyway
         'process_time_in_ms': json_result['ProcessingTimeInMilliseconds'],
     }
 
