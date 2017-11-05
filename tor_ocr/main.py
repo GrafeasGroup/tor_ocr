@@ -67,7 +67,7 @@ def process_image(image_url):
         }
         raise OCRError(error_result)
 
-    # If there's no text, we  might get back "", but just in case it's just
+    # If there's no text, we might get back "", but just in case it's just
     # whitespace, we don't want it.
     if result['text'].strip() == '':
         return None
