@@ -59,7 +59,9 @@ def process_image(image_url):
             'error_message': json_result['ErrorMessage'],
             'error_details': json_result['ErrorDetails'],
             # ignores errors per file, we should only get one file ever anyway.
-            'process_time_in_ms': json_result['ProcessingTimeInMilliseconds'],
+            'process_time_in_ms': int(
+                json_result['ProcessingTimeInMilliseconds']
+            ),
         }
     except KeyError:
         error_result = {
