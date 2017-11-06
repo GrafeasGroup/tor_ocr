@@ -50,7 +50,18 @@ def process_image(image_url):
     :param image_url: a string url of what you need OCRed
     :return: A dictionary containing several values, most importantly 'text'
     """
+
+    def _set_error_state(input):
+        error = {
+            'exit_code': json_result['exit_code']
+        }
+        return error
+
     json_result = decode_image_from_url(image_url)
+
+    if json_result.get('ParsedResults') is None:
+        raise OCRError(_set_error_state(json_result))
+
     try:
         result = {
             'text': json_result.get('ParsedResults')[0]['ParsedText'],
@@ -64,10 +75,7 @@ def process_image(image_url):
             ),
         }
     except KeyError:
-        error_result = {
-            'exit_code': json_result['exit_code']
-        }
-        raise OCRError(error_result)
+        raise OCRError(_set_error_state(json_result))
 
     # If there's no text, we might get back "", but just in case it's just
     # whitespace, we don't want it.
