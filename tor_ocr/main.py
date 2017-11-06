@@ -53,7 +53,7 @@ def process_image(image_url):
 
     def _set_error_state(input):
         error = {
-            'exit_code': json_result['exit_code']
+            'exit_code': json_result['OCRExitCode']
         }
         return error
 
