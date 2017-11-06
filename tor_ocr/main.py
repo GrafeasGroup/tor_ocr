@@ -1,10 +1,8 @@
 import logging
 import os
 import time
-import urllib
-from tesserocr import PyTessBaseAPI
 
-import wget
+import requests
 from tor_core.config import config
 # noinspection PyProtectedMember
 from tor_core.helpers import _
@@ -13,6 +11,7 @@ from tor_core.helpers import run_until_dead
 from tor_core.initialize import build_bot
 
 from tor_ocr import __version__
+from tor_ocr.errors import OCRError
 from tor_ocr.strings import base_comment
 
 """
@@ -41,29 +40,47 @@ Bot:
     u_tor_post_id.reply(ocr_magic)
 """
 
+# "helloworld" is a valid API key, however use it sparingly
+__OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
 
-def process_image(local_file):
-    with PyTessBaseAPI() as api:
-        api.SetImageFile(local_file)
-        text = api.GetUTF8Text()
 
-        confidences = api.AllWordConfidences()
-        if not confidences or len(confidences) == 0:
-            # we have an image, but it *really* couldn't find anything, not
-            # even false positives.
-            return None
+def process_image(image_url):
+    """
+    Processes an image with OCR, using ocr.space
+    :param image_url: a string url of what you need OCRed
+    :return: A dictionary containing several values, most importantly 'text'
+    """
+    json_result = decode_image_from_url(image_url)
+    try:
+        result = {
+            'text': json_result.get('ParsedResults')[0]['ParsedText'],
+            'exit_code': int(json_result['OCRExitCode']),  # this shouldn't fail
+            'error_on_processing': json_result['IsErroredOnProcessing'],
+            'error_message': json_result['ErrorMessage'],
+            'error_details': json_result['ErrorDetails'],
+            # ignores errors per file, we should only get one file ever anyway.
+            'process_time_in_ms': int(
+                json_result['ProcessingTimeInMilliseconds']
+            ),
+        }
+    except KeyError:
+        error_result = {
+            'exit_code': json_result['exit_code']
+        }
+        raise OCRError(error_result)
 
-        logging.debug('Average of confidences: {}'.format(
-            sum(confidences) / len(confidences))
-        )
+    # If there's no text, we might get back "", but just in case it's just
+    # whitespace, we don't want it.
+    if result['text'].strip() == '':
+        return None
 
-        # If you feed it a regular image with no text, more often than not
-        # you'll get newlines and spaces back. We strip those out to see if
-        # we actually got anything of substance.
-        if text.strip() != '':
-            return text
-        else:
-            return None
+    if result['exit_code'] != 1 \
+            or result['error_on_processing'] \
+            or not result['text']:
+        raise OCRError(result)
+
+    else:
+        return result
 
 
 def chunks(s, n):
@@ -76,8 +93,39 @@ def chunks(s, n):
         yield s[start:(start + n)]
 
 
-def run(config):
+def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
+    """
+    OCR.space API request with remote file.
+    Python3.5 - not tested on 2.7
+    This code is stolen from
+    https://github.com/Zaargh/ocr.space_code_example/blob/master/ocrspace_example.py
+    :param url: Image url.
+    :param overlay: Is OCR.space overlay required in your response.
+        Defaults to False.
+    :param api_key: OCR.space API key.
+        Defaults to environment variable "OCR_API_KEY"
+        If it doesn't exist, it will use "helloworld"
+    :return: Result in JSON format.
+    """
 
+    payload = {
+        'url': url,
+        'isOverlayRequired': overlay,
+        'apikey': api_key,
+    }
+
+    result = requests.post(
+        'https://api.ocr.space/parse/image',
+        data=payload,
+    )
+
+    # crash and burn if the API is down, or similar :)
+    result.raise_for_status()
+
+    return result.json()
+
+
+def run(config):
     time.sleep(config.ocr_delay)
     new_post = config.redis.lpop('ocr_ids')
     if new_post is None:
@@ -92,33 +140,17 @@ def run(config):
     logging.info(
         'Found a new post, ID {}'.format(new_post)
     )
-    image_post = config.r.submission(id=clean_id(new_post))
-
-    # download image for processing
-    # noinspection PyUnresolvedReferences
-    try:
-        filename = wget.download(image_post.url)
-    except (
-            urllib.error.HTTPError,
-            urllib.error.URLError
-    ):
-        # what if the post has been deleted or we don't know what it is?
-        # Ignore it and continue.
-        return
+    url = config.r.submission(id=clean_id(new_post)).url
 
     try:
-        result = process_image(filename)
-    except RuntimeError:
+        result = process_image(url)
+    except OCRError as e:
         logging.warning(
-            'Either we hit an imgur album or no text was returned.'
+            'There was an OCR Error: ' + str(e)
         )
-        os.remove(filename)
         return
 
     logging.debug('result: {}'.format(result))
-
-    # delete the image; we don't want to clutter up the HDD
-    os.remove(filename)
 
     if not result:
         logging.info('Result was none! Skipping!')
@@ -136,12 +168,27 @@ def run(config):
 
     tor_post = config.r.submission(id=clean_id(tor_post_id))
 
-    thing_to_reply_to = tor_post.reply(_(base_comment))
-    for chunk in chunks(result, 9000):
+    thing_to_reply_to = tor_post.reply(
+        _(base_comment.format(result['process_time_in_ms'] / 1000))
+    )
+
+    for chunk in chunks(result['text'], 9000):
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
-        thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
+        thing_to_reply_to = thing_to_reply_to.reply(
+            _(
+                chunk.replace(
+                    '\r\n', '\n\n'
+                ).replace(
+                    '/u/', '\\/u/'
+                ).replace(
+                    '/r/', '\\/r/'
+                ).replace(
+                    '>>', '\>\>'
+                )
+            )
+        )
 
     config.redis.delete(new_post)
 
