@@ -31,11 +31,9 @@ Bot:
     thingy = config.redis.lpop('ocr_ids')
     u_tor_post_id = config.redis.get(thingy)
 
-    get image from thingy
-    download it
-    ...OCR magic on thingy...
+    get link from thingy
+    ...OCR magic on link with API...
     save magic
-    delete image
 
     u_tor_post_id.reply(ocr_magic)
 """
