@@ -12,8 +12,10 @@ class OCRError(Exception):
     def __init__(self, result):
         super(OCRError, self).__init__(
             self.CODES.get(
-                result['OCRExitCode'],
-                "I seriously have no idea. Got {}".format(result['OCRExitCode'])
+                result['FileParseExitCode'],
+                "I seriously have no idea. Got {}".format(
+                    result['FileParseExitCode']
+                )
             )
         )
         self.result = result

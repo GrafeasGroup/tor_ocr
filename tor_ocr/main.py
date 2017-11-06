@@ -50,9 +50,9 @@ def process_image(image_url):
     :return: A dictionary containing several values, most importantly 'text'
     """
 
-    def _set_error_state(input):
+    def _set_error_state(response):
         error = {
-            'exit_code': json_result['OCRExitCode']
+            'exit_code': response['FileParseExitCode']
         }
         return error
 
@@ -64,7 +64,7 @@ def process_image(image_url):
     try:
         result = {
             'text': json_result.get('ParsedResults')[0]['ParsedText'],
-            'exit_code': int(json_result['OCRExitCode']),  # this shouldn't fail
+            'exit_code': int(json_result['FileParseExitCode']),  # this shouldn't fail
             'error_on_processing': json_result['IsErroredOnProcessing'],
             'error_message': json_result['ErrorMessage'],
             'error_details': json_result['ErrorDetails'],
