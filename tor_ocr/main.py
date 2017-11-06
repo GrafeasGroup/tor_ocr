@@ -74,7 +74,7 @@ def process_image(image_url):
                 json_result['ProcessingTimeInMilliseconds']
             ),
         }
-    except KeyError:
+    except (KeyError, IndexError):
         raise OCRError(_set_error_state(json_result))
 
     # If there's no text, we might get back "", but just in case it's just
