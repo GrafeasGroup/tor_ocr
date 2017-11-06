@@ -2,6 +2,7 @@ import logging
 import os
 import time
 
+import bugsnag
 import requests
 from tor_core.config import config
 # noinspection PyProtectedMember
@@ -74,7 +75,11 @@ def process_image(image_url):
                 json_result['ProcessingTimeInMilliseconds']
             ),
         }
-    except (KeyError, IndexError):
+    except KeyError:
+        raise OCRError(_set_error_state(json_result))
+
+    except IndexError as e:
+        bugsnag.notify(e, meta_data={json_result})
         raise OCRError(_set_error_state(json_result))
 
     # If there's no text, we might get back "", but just in case it's just
