@@ -88,7 +88,7 @@ def process_image(image_url):
     if result['exit_code'] != 1 \
             or result['error_on_processing'] \
             or not result['text']:
-        raise OCRError(result)
+        raise OCRError(json_result)
 
     else:
         return result
