@@ -1,5 +1,13 @@
 class OCRError(Exception):
-    CODES = {
+    # all codes from https://ocr.space/ocrapi
+    OCR_EXIT_CODES = {
+        1: 'parsed successfully',
+        2: 'parsed partially',
+        3: 'ENGINE ERROR: all pages failed',
+        4: 'ENGINE ERROR: FATAL',
+    }
+
+    PAGE_EXIT_CODES = {
         1: 'success',
         0: 'file not found',
         -10: 'OCR engine parse error',
@@ -11,9 +19,13 @@ class OCRError(Exception):
 
     def __init__(self, result):
         super(OCRError, self).__init__(
-            self.CODES.get(
+            self.PAGE_EXIT_CODES.get(
                 result['exit_code'],
-                "I seriously have no idea. Got {}".format(result['exit_code'])
+                "Unrecognized error: Code {0}, {1}: {2}".format(
+                    result['exit_code'],
+                    result['error_message'],
+                    result['error_details']
+                )
             )
         )
         self.result = result

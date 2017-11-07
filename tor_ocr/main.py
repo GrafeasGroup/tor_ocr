@@ -51,8 +51,12 @@ def process_image(image_url):
     """
 
     def _set_error_state(response):
+        # In the event of an error, build a "lite" version of the response dict
+        # and use that to present an error message.
         error = {
-            'exit_code': response['FileParseExitCode']
+            'exit_code': response['OCRExitCode'],
+            'error_message': json_result.get('ErrorMessage'),
+            'error_details': json_result.get('ErrorDetails')
         }
         return error
 
@@ -64,7 +68,9 @@ def process_image(image_url):
     try:
         result = {
             'text': json_result.get('ParsedResults')[0]['ParsedText'],
-            'exit_code': int(json_result['FileParseExitCode']),  # this shouldn't fail
+            'exit_code': int(json_result['OCRExitCode']),
+            # this will change depending on how many pages we send it
+            'page_exit_code': int(json_result[0]['FileParseExitCode']),
             'error_on_processing': json_result['IsErroredOnProcessing'],
             'error_message': json_result['ErrorMessage'],
             'error_details': json_result['ErrorDetails'],
@@ -88,7 +94,7 @@ def process_image(image_url):
     if result['exit_code'] != 1 \
             or result['error_on_processing'] \
             or not result['text']:
-        raise OCRError(json_result)
+        raise OCRError(_set_error_state(json_result))
 
     else:
         return result
