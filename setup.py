@@ -49,7 +49,7 @@ setup(
     version=__version__,
     description='An AI attempting to transcribe contents of /r/TranscribersOfReddit',
     long_description=long_description(),
-    url='https://github.com/TranscribersOfReddit/ToR_OCR',
+    url='https://github.com/GrafeasGroup/tor_ocr',
     author='Joe Kaufeld',
     author_email='joe.kaufeld@gmail.com',
     license='MIT',
@@ -87,6 +87,6 @@ setup(
         'bugsnag',
     ],
     dependency_links=[
-        'git+https://github.com/TranscribersOfReddit/tor_core.git@master#egg=tor_core-0',
+        'git+https://github.com/GrafeasGroup/tor_core.git@master#egg=tor_core-0',
     ],
 )
