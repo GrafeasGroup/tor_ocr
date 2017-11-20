@@ -220,12 +220,11 @@ def main():
     """
         Console scripts entry point for OCR Bot
     """
-
-    build_bot('bot_ocr',
-              __version__,
-              full_name='u/transcribot',
-              log_name='ocr.log')
     config.ocr_delay = 10
+    config.debug_mode = bool(os.environ.get('DEBUG_MODE', False))
+    bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'bot_ocr')
+
+    build_bot(bot_name, __version__, full_name='u/transcribot', log_name='ocr.log')
     run_until_dead(run)
 
 
