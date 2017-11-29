@@ -225,7 +225,7 @@ def main():
               __version__,
               full_name='u/transcribot',
               log_name='ocr.log')
-    config.ocr_delay = 10
+    config.ocr_delay = 2
     run_until_dead(run)
 
 
