@@ -41,6 +41,8 @@ Bot:
 
 # "helloworld" is a valid API key, however use it sparingly
 __OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
+# __OCR_API_URL__ = 'https://api.ocr.space/parse/image'  # free API url
+__OCR_API_URL__ = 'https://apipro1.ocr.space/parse/image'
 
 
 def process_image(image_url):
@@ -130,17 +132,19 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     }
 
     result = requests.post(
-        'https://api.ocr.space/parse/image',
+        __OCR_API_URL__,
         data=payload,
     )
 
     if not result.ok:
-        logging.error('ERROR {code} with OCR:\n\nHEADERS:\n{headers}\n\nBODY:\n{body}'
-                      ''.format(
-                          headers=repr(result.headers),
-                          body=repr(result.text),
-                          code=result.status_code,
-                      ))
+        logging.error(
+            'ERROR {code} with OCR:\n\nHEADERS:\n{headers}\n\nBODY:\n{body}'
+            ''.format(
+                headers=repr(result.headers),
+                body=repr(result.text),
+                code=result.status_code,
+            )
+        )
 
     # crash and burn if the API is down, or similar :)
     result.raise_for_status()
