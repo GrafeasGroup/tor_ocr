@@ -25,7 +25,7 @@ Tesseract (OCR solution)
 ## Installation
 
 ```
-$ git clone https://github.com/TranscribersOfReddit/ToR_OCR.git tor_ocr
+$ git clone https://github.com/GrafeasGroup/tor_ocr.git tor_ocr
 $ cd tor_ocr/
 $ pip install --process-dependency-links .
 ```
@@ -33,7 +33,7 @@ $ pip install --process-dependency-links .
 OR
 
 ```
-$ pip install --process-dependency-links 'git+https://github.com/TranscribersOfReddit/ToR_OCR.git@master#egg=tor_ocr-0'
+$ pip install --process-dependency-links 'git+https://github.com/GrafeasGroup/tor_ocr.git@master#egg=tor_ocr-0'
 ```
 
 ## High-level functionality
