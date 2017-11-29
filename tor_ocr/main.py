@@ -203,19 +203,22 @@ def run(config):
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
-        thing_to_reply_to = thing_to_reply_to.reply(
-            _(
-                chunk.replace(
-                    '\r\n', '\n\n'
-                ).replace(
-                    '/u/', '\\/u/'
-                ).replace(
-                    '/r/', '\\/r/'
-                ).replace(
-                    '>>', '\>\>'
-                )
-            )
+
+        chunk = chunk.replace(
+            '\r\n', '\n\n'
+        ).replace(
+            '/u/', '\\/u/'
+        ).replace(
+            '/r/', '\\/r/'
+        ).replace(
+            ' u/', ' \\/u/'
+        ).replace(
+            ' r/', ' \\/r/'
+        ).replace(
+            '>>', '\>\>'
         )
+
+        thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
 
     config.redis.delete(new_post)
 
