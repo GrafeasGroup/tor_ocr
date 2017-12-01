@@ -138,7 +138,8 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
     if not result.ok:
         logging.error(
-            f'ERROR {result.status_code} with OCR:\n\nHEADERS:\n{repr(result.headers)}\n\nBODY:\n{repr(result.text)}'
+            f'ERROR {result.status_code} with OCR:\n\nHEADERS:\n '
+            f'{repr(result.headers)}\n\nBODY:\n{repr(result.text)} '
         )
 
     # crash and burn if the API is down, or similar :)
