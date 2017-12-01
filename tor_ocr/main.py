@@ -138,12 +138,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
     if not result.ok:
         logging.error(
-            'ERROR {code} with OCR:\n\nHEADERS:\n{headers}\n\nBODY:\n{body}'
-            ''.format(
-                headers=repr(result.headers),
-                body=repr(result.text),
-                code=result.status_code,
-            )
+            f'ERROR {result.status_code} with OCR:\n\nHEADERS:\n{repr(result.headers)}\n\nBODY:\n{repr(result.text)}'
         )
 
     # crash and burn if the API is down, or similar :)
@@ -165,7 +160,7 @@ def run(config):
     # We got something!
     new_post = new_post.decode('utf-8')
     logging.info(
-        'Found a new post, ID {}'.format(new_post)
+        f'Found a new post, ID {new_post}'
     )
     url = config.r.submission(id=clean_id(new_post)).url
 
@@ -177,7 +172,7 @@ def run(config):
         )
         return
 
-    logging.debug('result: {}'.format(result))
+    logging.debug(f'result: {result}')
 
     if not result:
         logging.info('Result was none! Skipping!')
@@ -188,9 +183,7 @@ def run(config):
     tor_post_id = config.redis.get(new_post).decode('utf-8')
 
     logging.info(
-        'posting transcription attempt for {} on {}'.format(
-            new_post, tor_post_id
-        )
+        f'posting transcription attempt for {new_post} on {tor_post_id}'
     )
 
     tor_post = config.r.submission(id=clean_id(tor_post_id))
