@@ -21,7 +21,8 @@ class OCRError(Exception):
         super(OCRError, self).__init__(
             self.PAGE_EXIT_CODES.get(
                 result['exit_code'],
-                f"Unrecognized error: Code {result['exit_code']}, {result['error_message']}: {result['error_details']}"
+                f"Unrecognized error: Code {result['exit_code']}, "
+                f"{result['error_message']}: {result['error_details']}"
             )
         )
         self.result = result
