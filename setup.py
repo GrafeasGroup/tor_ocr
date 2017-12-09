@@ -79,12 +79,7 @@ setup(
     },
     tests_require=test_deps,
     install_requires=[
-        'praw==5.0.1',
-        'redis<3.0.0',
         'tor_core',
-        'addict',
-        'sh',
-        'bugsnag',
     ],
     dependency_links=[
         'git+https://github.com/GrafeasGroup/tor_core.git@master#egg=tor_core-0',

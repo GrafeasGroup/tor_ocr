@@ -2,7 +2,6 @@ import logging
 import os
 import time
 
-import bugsnag
 import requests
 from tor_core.config import config
 # noinspection PyProtectedMember
