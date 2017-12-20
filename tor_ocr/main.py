@@ -3,6 +3,7 @@ import os
 import time
 
 import requests
+from requests.exceptions import RequestException
 from tor_core.config import config
 # noinspection PyProtectedMember
 from tor_core.helpers import _
@@ -40,8 +41,12 @@ Bot:
 
 # "helloworld" is a valid API key, however use it sparingly
 __OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
-# __OCR_API_URL__ = 'https://api.ocr.space/parse/image'  # free API url
-__OCR_API_URL__ = 'https://apipro1.ocr.space/parse/image'
+# __OCR_API_URLS__ = ['https://api.ocr.space/parse/image']  # free API url
+__OCR_API_URLS__ = [
+    'https://apipro1.ocr.space/parse/image',  # USA
+    'https://apipro2.ocr.space/parse/image',  # Europe
+    'https://apipro3.ocr.space/parse/image'  # Asia
+]
 
 
 def process_image(image_url):
@@ -130,19 +135,32 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
         'apikey': api_key,
     }
 
-    result = requests.post(
-        __OCR_API_URL__,
-        data=payload,
-    )
+    result = None
 
-    if not result.ok:
-        logging.error(
-            f'ERROR {result.status_code} with OCR:\n\nHEADERS:\n '
-            f'{repr(result.headers)}\n\nBODY:\n{repr(result.text)} '
+    for API in __OCR_API_URLS__:
+        try:
+            result = requests.post(API, data=payload)
+            # crash and burn if the API is down, or similar :)
+            result.raise_for_status()
+
+            # if the request succeeds, we'll have a result. Therefore, just
+            # break the loop here.
+            break
+        except ConnectionError:
+            # try the next API in the list, then release from the loop if we
+            # exhaust our options.
+            pass
+        except RequestException:
+            # we have a result object here but it's not right.
+            logging.error(
+                f'ERROR {result.status_code} with OCR:\n\nHEADERS:\n '
+                f'{repr(result.headers)}\n\nBODY:\n{repr(result.text)} '
+            )
+
+    if result is None or not result.ok:
+        raise ConnectionError(
+            'Attempted all three OCR.space APIs -- cannot connect!'
         )
-
-    # crash and burn if the API is down, or similar :)
-    result.raise_for_status()
 
     return result.json()
 
