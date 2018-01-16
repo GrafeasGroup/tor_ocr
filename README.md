@@ -48,6 +48,13 @@ Monitoring daemon (via Redis queue):
 
 [over-9000]: https://tenor.com/view/dragonball-z-super-saiyan-charging-yelling-gif-4987448
 
+### Running the Bot
+
+```bash
+$ tor-apprentice
+# => [daemon mode + logging]
+```
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](/CONTRIBUTING.md) for more.
