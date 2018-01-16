@@ -13,8 +13,8 @@ be a start to a more legitimate, volunteer-written transcription.
 
 ## Resources
 
-Redis (tracking completed posts and queue system)
-Tesseract (OCR solution)
+- Redis (tracking completed posts and queue system)
+- [ocr.space](https://ocr.space) (OCR solution)
 
 > **NOTE:**
 >
@@ -41,20 +41,12 @@ $ pip install --process-dependency-links 'git+https://github.com/GrafeasGroup/to
 Monitoring daemon (via Redis queue):
 
 - Pull job (by post id) off of queue:
-  - Download image
-  - OCR the image
+  - Get image URL
+  - Use orc.space API on the image
   - If OCR successful:
     - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks, replying to previous comment when [over 9000][over-9000] characters
-  - Delete local copy of image
 
 [over-9000]: https://tenor.com/view/dragonball-z-super-saiyan-charging-yelling-gif-4987448
-
-### Running Apprentice Bot
-
-```
-$ tor-apprentice
-# => [daemon mode + logging]
-```
 
 ## Contributing
 
