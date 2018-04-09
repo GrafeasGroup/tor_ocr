@@ -5,6 +5,8 @@ class OCRError(Exception):
         2: 'parsed partially',
         3: 'ENGINE ERROR: all pages failed',
         4: 'ENGINE ERROR: FATAL',
+        6: 'Timed out while waiting for results',
+        99: 'Not a valid URL; invalid image or pdf',
     }
 
     PAGE_EXIT_CODES = {
