@@ -143,6 +143,10 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
             # crash and burn if the API is down, or similar :)
             result.raise_for_status()
 
+            if result.json()['OCRExitCode'] == 6:
+                # process timed out waiting for response
+                raise ConnectionError
+
             # if the request succeeds, we'll have a result. Therefore, just
             # break the loop here.
             break
@@ -165,6 +169,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     return result.json()
 
 
+# noinspection PyShadowingNames
 def run(config):
     time.sleep(config.ocr_delay)
     new_post = config.redis.lpop('ocr_ids')
