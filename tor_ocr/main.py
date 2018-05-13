@@ -165,10 +165,41 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
         raise ConnectionError(
             'Attempted all three OCR.space APIs -- cannot connect!'
         )
-
     return result.json()
 
 
+def clean_formatting(body):
+  """ Returns a version of the input body with the formatting stripped """
+  return body.replace(
+            '\r\n', '\n\n'
+        ).replace(
+            '/u/', '\\/u/'
+        ).replace(
+            '/r/', '\\/r/'
+        ).replace(
+            ' u/', ' \\/u/'
+        ).replace(
+            ' r/', ' \\/r/'
+        ).replace(
+            '>', '\>' # Don't blockquote
+        ).replace(
+            '~', '\\~' # Strikethrough
+        ).replace(
+            '*', '\\*' # Bold, Italic, List
+        ).replace(
+            '_', '\\_', # Bold, italic
+        ).replace(
+            '#', '\\#' # Headings
+        ).replace(
+            '^', '\\^' # Superscript
+        ).replace(
+            '+', '\\+' # List
+        ).replace(
+            '-', '\\-' # List
+        ).replace(
+            '`', '\\`' # List
+        )
+  
 # noinspection PyShadowingNames
 def run(config):
     time.sleep(config.ocr_delay)
@@ -220,19 +251,7 @@ def run(config):
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
 
-        chunk = chunk.replace(
-            '\r\n', '\n\n'
-        ).replace(
-            '/u/', '\\/u/'
-        ).replace(
-            '/r/', '\\/r/'
-        ).replace(
-            ' u/', ' \\/u/'
-        ).replace(
-            ' r/', ' \\/r/'
-        ).replace(
-            '>>', '\>\>'
-        )
+        chunk = clean_formatting(chunk)
 
         thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
 
