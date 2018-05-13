@@ -170,7 +170,8 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
 def clean_formatting(body):
   """ Returns a version of the input body with the formatting stripped """
-  return body.replace(
+  snoodown_chars = [ '>', '~', '*', '_', '#', '^', '+', '-', '`', '|']
+  body = body.replace(
             '\r\n', '\n\n'
         ).replace(
             '/u/', '\\/u/'
@@ -180,27 +181,10 @@ def clean_formatting(body):
             ' u/', ' \\/u/'
         ).replace(
             ' r/', ' \\/r/'
-        ).replace(
-            '>', '\>' # Don't blockquote
-        ).replace(
-            '~', '\\~' # Strikethrough
-        ).replace(
-            '*', '\\*' # Bold, Italic, List
-        ).replace(
-            '_', '\\_', # Bold, italic
-        ).replace(
-            '#', '\\#' # Headings
-        ).replace(
-            '^', '\\^' # Superscript
-        ).replace(
-            '+', '\\+' # List
-        ).replace(
-            '-', '\\-' # List
-        ).replace(
-            '`', '\\`' # List
-        ).replace(
-            '|', '\\|' # Table formatting
         )
+  for escape_char in snoodown_chars:
+        body = body.replace(escape_char, '\\' + escape_char)
+  return body
   
 # noinspection PyShadowingNames
 def run(config):
