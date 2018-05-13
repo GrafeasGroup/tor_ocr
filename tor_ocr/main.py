@@ -165,6 +165,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
         raise ConnectionError(
             'Attempted all three OCR.space APIs -- cannot connect!'
         )
+        
     return result.json()
 
 
@@ -198,6 +199,8 @@ def clean_formatting(body):
             '-', '\\-' # List
         ).replace(
             '`', '\\`' # List
+        ).replace(
+            '|', '\\|' # Table formatting
         )
   
 # noinspection PyShadowingNames
