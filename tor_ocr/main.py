@@ -185,7 +185,7 @@ def clean_formatting(body):
   for escape_char in snoodown_chars:
         body = body.replace(escape_char, '\\' + escape_char)
   return body
-  
+
 # noinspection PyShadowingNames
 def run(config):
     time.sleep(config.ocr_delay)
