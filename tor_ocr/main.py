@@ -80,8 +80,12 @@ def process_image(image_url):
                 json_result['ParsedResults'][0]['FileParseExitCode']
             ),
             'error_on_processing': json_result['IsErroredOnProcessing'],
-            'error_message': json_result['ErrorMessage'],
-            'error_details': json_result['ErrorDetails'],
+            # the API has stopped returning these two fields. The documentation
+            # says that it should still be there, but they're only there on
+            # an actual error now. We'll still keep looking for the fields, but
+            # we won't make them required. First seen on 8/13/18
+            'error_message': json_result.get('ErrorMessage', ''),
+            'error_details': json_result.get('ErrorDetails', ''),
             # ignores errors per file, we should only get one file ever anyway.
             'process_time_in_ms': int(
                 json_result['ProcessingTimeInMilliseconds']
@@ -117,8 +121,7 @@ def chunks(s, n):
 def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     """
     OCR.space API request with remote file.
-    Python3.5 - not tested on 2.7
-    This code is stolen from
+    This code was originally borrowed from
     https://github.com/Zaargh/ocr.space_code_example/blob/master/ocrspace_example.py
     :param url: Image url.
     :param overlay: Is OCR.space overlay required in your response.
@@ -140,7 +143,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     for API in __OCR_API_URLS__:
         try:
             result = requests.post(API, data=payload)
-            # crash and burn if the API is down, or similar :)
+            # crash and burn if the API is down, or similar
             result.raise_for_status()
 
             if result.json()['OCRExitCode'] == 6:
