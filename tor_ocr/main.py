@@ -160,7 +160,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
         except RequestException:
             # we have a result object here but it's not right.
             if result is None:
-                logging.error(
+                logging.warning(
                     'Received null object because of a request exception. '
                     'Skipping.'
                 )
