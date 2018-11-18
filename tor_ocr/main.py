@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import time
 
 import requests
@@ -178,6 +179,19 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
     return result.json()
 
 
+def escape_reddit_links(body):
+    """
+    Escape u/ and r/ links in a message so we don't get confused redditors
+    commenting on transcribot.
+    There is no (known) way to escape u/ or r/ (without a preceding slash),
+    so those will also be changed to \/u/ and \/r/.
+    :param body: the text to escape
+    :return: the escaped text
+    """
+    magic = re.compile('(?<![a-zA-Z0-9])([ur])/|/([ur])/')
+    return magic.sub(r'\/\1\2/', body)
+
+
 # noinspection PyShadowingNames
 def run(config):
     time.sleep(config.ocr_delay)
@@ -229,18 +243,12 @@ def run(config):
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
 
-        chunk = chunk.replace(
-            '\r\n', '\n\n'
-        ).replace(
-            '/u/', '\\/u/'
-        ).replace(
-            '/r/', '\\/r/'
-        ).replace(
-            ' u/', ' \\/u/'
-        ).replace(
-            ' r/', ' \\/r/'
-        ).replace(
-            '>>', '\>\>'
+        chunk = escape_reddit_links(
+            chunk.replace(
+                '\r\n', '\n\n'
+            ).replace(
+                '>>', '\>\>'
+            )
         )
 
         thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
