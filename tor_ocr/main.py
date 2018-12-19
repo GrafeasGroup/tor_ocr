@@ -5,6 +5,8 @@ import time
 
 import requests
 from requests.exceptions import RequestException
+from requests.exceptions import ConnectTimeout
+
 from tor_core.config import config
 # noinspection PyProtectedMember
 from tor_core.helpers import _
@@ -67,7 +69,6 @@ def process_image(image_url):
         }
         return error
 
-    logging.info(f'Attempting to parse {image_url}')
     json_result = decode_image_from_url(image_url)
 
     if json_result.get('ParsedResults') is None:
@@ -144,8 +145,11 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
     for API in __OCR_API_URLS__:
         try:
-            logging.info(f'Calling ocr.space API: {API}')
-            result = requests.post(API, data=payload)
+            # The timeout for this request goes until the first bit response,
+            # not for the entire request process. If we don't hear anything
+            # from the remote server for 2 seconds, throw a ConnectTimeout
+            # and move on to the next one.
+            result = requests.post(API, data=payload, timeout=2)
             # crash and burn if the API is down, or similar
             result.raise_for_status()
 
@@ -156,6 +160,9 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
             # if the request succeeds, we'll have a result. Therefore, just
             # break the loop here.
             break
+        except ConnectTimeout:
+            # Sometimes the ocr.space API will just... not respond. Move on.
+            continue
         except ConnectionError:
             # try the next API in the list, then release from the loop if we
             # exhaust our options.
@@ -178,7 +185,6 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
             'Attempted all three OCR.space APIs -- cannot connect!'
         )
 
-    logging.info('Got a positive response; returning image data.')
     return result.json()
 
 
