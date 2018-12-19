@@ -167,12 +167,12 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
             # try the next API in the list, then release from the loop if we
             # exhaust our options.
             continue
-        except RequestException:
+        except RequestException as e:
             # we have a result object here but it's not right.
             if result is None:
                 logging.warning(
-                    'Received null object because of a request exception. '
-                    'Skipping.'
+                    f'Received null object because of a request exception. '
+                    f'Attempted API: {API} | Error: {e}'
                 )
             else:
                 logging.error(
