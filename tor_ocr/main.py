@@ -69,7 +69,6 @@ def process_image(image_url):
         }
         return error
 
-    logging.info(f'Attempting to parse {image_url}')
     json_result = decode_image_from_url(image_url)
 
     if json_result.get('ParsedResults') is None:
@@ -146,7 +145,6 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
     for API in __OCR_API_URLS__:
         try:
-            logging.info(f'Calling ocr.space API: {API}')
             result = requests.post(API, data=payload, timeout=2)
             # crash and burn if the API is down, or similar
             result.raise_for_status()
@@ -184,7 +182,6 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
             'Attempted all three OCR.space APIs -- cannot connect!'
         )
 
-    logging.info('Got a positive response; returning image data.')
     return result.json()
 
 
