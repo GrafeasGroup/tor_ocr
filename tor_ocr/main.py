@@ -145,6 +145,10 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
     for API in __OCR_API_URLS__:
         try:
+            # The timeout for this request goes until the first bit response,
+            # not for the entire request process. If we don't hear anything
+            # from the remote server for 2 seconds, throw a ConnectTimeout
+            # and move on to the next one.
             result = requests.post(API, data=payload, timeout=2)
             # crash and burn if the API is down, or similar
             result.raise_for_status()
@@ -157,8 +161,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
             # break the loop here.
             break
         except ConnectTimeout:
-            # Sometimes the ocr.space API will just... not respond. Move to
-            # the next one.
+            # Sometimes the ocr.space API will just... not respond. Move on.
             continue
         except ConnectionError:
             # try the next API in the list, then release from the loop if we
