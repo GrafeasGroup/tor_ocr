@@ -273,7 +273,7 @@ def main():
     config.debug_mode = DEBUG_MODE
     bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'bot_ocr')
 
-    build_bot(bot_name, __version__, full_name='u/transcribot', log_name='ocr.log')
+    build_bot(bot_name, __version__, full_name='u/transcribot')
     if NOOP_MODE:
         run_until_dead(noop)
     else:
