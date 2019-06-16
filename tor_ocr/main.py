@@ -4,17 +4,12 @@ import re
 import time
 
 import requests
-from requests.exceptions import RequestException
-from requests.exceptions import ConnectTimeout
-
-from tor_core.config import config
-# noinspection PyProtectedMember
-from tor_core.helpers import _
-from tor_core.helpers import clean_id
-from tor_core.helpers import run_until_dead
-from tor_core.initialize import build_bot
+from requests.exceptions import ConnectTimeout, RequestException
 
 from tor_ocr import __version__
+from tor_ocr.core.config import config
+from tor_ocr.core.helpers import _, clean_id, run_until_dead
+from tor_ocr.core.initialize import build_bot
 from tor_ocr.errors import OCRError
 from tor_ocr.strings import base_comment
 
