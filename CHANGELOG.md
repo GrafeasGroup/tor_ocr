@@ -3,7 +3,7 @@
 We follow [Semantic Versioning](http://semver.org/) as a way of measuring stability of an update. This
 means we will never make a backwards-incompatible change within a major version of the project.
 
-## [UNRELEASED]
+## [0.2.0] -- 2019-06-16
 
 - Pulls in `tor_core` as `tor_ocr.core`
 - Adds `tox` as a way of invoking tests in lieu of `python setup.py test`
