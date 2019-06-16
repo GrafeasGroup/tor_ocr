@@ -187,7 +187,7 @@ def decode_image_from_url(url, overlay=False, api_key=__OCR_API_KEY__):
 
 
 def escape_reddit_links(body):
-    """
+    r"""
     Escape u/ and r/ links in a message so we don't get confused redditors
     commenting on transcribot.
     There is no (known) way to escape u/ or r/ (without a preceding slash),
@@ -254,7 +254,7 @@ def run(config):
             chunk.replace(
                 '\r\n', '\n\n'
             ).replace(
-                '>>', '\>\>'
+                '>>', r'\>\>'
             )
         )
 
