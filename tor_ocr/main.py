@@ -46,6 +46,9 @@ __OCR_API_URLS__ = [
     'https://apipro3.ocr.space/parse/image'  # Asia
 ]
 
+NOOP_MODE = bool(os.getenv('NOOP_MODE', ''))
+DEBUG_MODE = bool(os.getenv('DEBUG_MODE', ''))
+
 
 def process_image(image_url):
     """
@@ -260,17 +263,21 @@ def run(config):
     config.redis.delete(new_post)
 
 
-def main():
-    """
-        Console scripts entry point for OCR Bot
-    """
+def noop(cfg):
+    time.sleep(5)
+    logging.info('Loop!')
 
+
+def main():
     config.ocr_delay = 2
-    config.debug_mode = bool(os.environ.get('DEBUG_MODE', False))
+    config.debug_mode = DEBUG_MODE
     bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'bot_ocr')
 
     build_bot(bot_name, __version__, full_name='u/transcribot', log_name='ocr.log')
-    run_until_dead(run)
+    if NOOP_MODE:
+        run_until_dead(noop)
+    else:
+        run_until_dead(run)
 
 
 if __name__ == '__main__':
