@@ -6,9 +6,6 @@ import sys
 import redis
 from bugsnag.handlers import BugsnagHandler
 from praw import Reddit
-from raven import Client
-from raven.conf import setup_logging
-from raven.handlers.logging import SentryHandler
 from slackclient import SlackClient
 from tor_ocr.core import __HEARTBEAT_FILE__
 from tor_ocr.core.config import config
@@ -69,16 +66,6 @@ def configure_logging(config):
         logging.info('Bugsnag enabled!')
     else:
         logging.info('Not running with Bugsnag!')
-
-    if config.sentry_api_url:
-        sentry_handler = SentryHandler(Client(config.sentry_api_url))
-        sentry_handler.setLevel(logging.ERROR)
-        # I don't know what this line does but it seems required by raven
-        setup_logging(sentry_handler)
-        logging.getLogger('').addHandler(sentry_handler)
-        logging.info('Sentry enabled!')
-    else:
-        logging.info('Not running with Sentry!')
 
     log_header('Starting!')
 
