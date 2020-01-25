@@ -5,6 +5,7 @@ import time
 
 import requests
 from requests.exceptions import ConnectTimeout, RequestException
+from tor_ocr.core.blossom import BlossomAPI
 
 from tor_ocr import __version__
 from tor_ocr.core.config import config
@@ -215,8 +216,12 @@ def run(config):
     logging.info(
         f'Found a new post, ID {new_post}'
     )
-    url = config.r.submission(id=clean_id(new_post)).url
 
+    b = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
+    blossom_submission = b.get("/submission/2/").json()
+    logging.info(blossom_submission)
+
+    url = config.r.submission(id=clean_id(new_post)).url
     try:
         result = process_image(url)
     except OCRError as e:
