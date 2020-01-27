@@ -253,7 +253,7 @@ def run(config):
     logging.info(blossom_submission)
 
     if not blossom_submission['has_ocr_transcription']:
-        transcription_data = {
+        new_transcription_data = {
             "submission_id": blossom_submission['submission_id'],
             "transcription_id": "string",
             "completion_method": "string",
@@ -262,7 +262,7 @@ def run(config):
             "t_url": "string",
             "t_text": result['text']
         }
-        b_api.post('/transcription/', transcription_data)
+        b_api.post('/transcription/', new_transcription_data)
 
 
     thing_to_reply_to = tor_post.reply(
