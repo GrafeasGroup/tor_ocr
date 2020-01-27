@@ -38,6 +38,9 @@ Bot:
     u_tor_post_id.reply(ocr_magic)
 """
 
+# TODO: set the client credentials to environment variables
+b_api = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
+
 # "helloworld" is a valid API key, however use it sparingly
 __OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
 # __OCR_API_URLS__ = ['https://api.ocr.space/parse/image']  # free API url
@@ -242,33 +245,18 @@ def run(config):
 
     tor_post = config.r.submission(id=clean_id(tor_post_id))
 
-    b_api = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
-
     # Get submission from blossom
     blossom_submission = b_api.get("/submission/2/").json()
-    # blossom_submission = b_api.get(f"/submission/{tor_post_id}/").json()
-    # submission for tor_post_id does not exist yet, do we need to create it?
+    # blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
+    # submission for tor_post_id does not exist yet, will be eventually posted by tor_bot
 
     logging.info(blossom_submission)
-
-    if not blossom_submission['has_ocr_transcription']:
-        new_transcription_data = {
-            "submission_id": blossom_submission['submission_id'],
-            "transcription_id": "string",
-            "completion_method": "string",
-            "v_id": blossom_submission['claimed_by'],
-            "t_id": 2,
-            "t_url": "string",
-            "t_text": result['text']
-        }
-        b_api.post('/transcription/', new_transcription_data)
-
 
     thing_to_reply_to = tor_post.reply(
         _(base_comment.format(result['process_time_in_ms'] / 1000))
     )
 
-    for chunk in chunks(result['text'], 9000):
+    for counter, chunk in enumerate(chunks(result['text'], 9000)):
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
@@ -281,7 +269,22 @@ def run(config):
             )
         )
 
+        # assign that variable after this line, clean_id(cachedvalue.fullname)
         thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
+
+        if counter==0:
+            first_comment = thing_to_reply_to
+
+    if not blossom_submission['has_ocr_transcription']:
+        new_transcription_data = {
+            "submission_id": blossom_submission['submission_id'],
+            "completion_method": "tor_ocr",
+            "v_id": config.v_id,
+            "t_id": tor_post_id,
+            "t_url": "https://reddit.com"+first_comment.permalink,
+            "t_text": result['text']
+        }
+        b_api.post('/transcription/', new_transcription_data)
 
     config.redis.delete(new_post)
 
@@ -291,12 +294,21 @@ def noop(cfg):
     logging.info('Loop!')
 
 
+def get_volunteer_id(reddit_username):
+    #remove first 2 characters (eg: u/transcribot => transcribot)
+    formatted_name = reddit_username[2:]
+    volunteer_record = b_api.get(f"/volunteer/?username={formatted_name}").json()['results'][0]
+    volunteer_id = volunteer_record['id']
+    return volunteer_id
+
 def main():
     config.ocr_delay = 2
     config.debug_mode = DEBUG_MODE
     bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'bot_ocr')
 
     build_bot(bot_name, __version__, full_name='u/transcribot')
+    config.v_id = get_volunteer_id(config.name)
+    
     if NOOP_MODE:
         run_until_dead(noop)
     else:
