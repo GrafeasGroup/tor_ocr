@@ -244,11 +244,10 @@ def run(config):
 
     b_api = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
 
-    # hard coded for testing
+    # Get submission from blossom
     blossom_submission = b_api.get("/submission/2/").json()
-
-    # submission for tor_post_id does not exist yet, do we need to create it?
     # blossom_submission = b_api.get(f"/submission/{tor_post_id}/").json()
+    # submission for tor_post_id does not exist yet, do we need to create it?
 
     logging.info(blossom_submission)
 
