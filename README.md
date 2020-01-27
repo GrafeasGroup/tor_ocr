@@ -24,16 +24,20 @@ be a start to a more legitimate, volunteer-written transcription.
 
 ## Installation
 
-```
-$ git clone https://github.com/GrafeasGroup/tor_ocr.git tor_ocr
-$ cd tor_ocr/
-$ pip install --process-dependency-links .
-```
-
-OR
+From release, download the [latest release](https://github.com/GrafeasGroup/tor_ocr/releases/latest) and `pip install` the wheel attached to it.
 
 ```
-$ pip install --process-dependency-links 'git+https://github.com/GrafeasGroup/tor_ocr.git@master#egg=tor_ocr-0'
+$ curl -SLo ./tor_ocr.whl https://github.com/GrafeasGroup/tor_ocr/releases/download/v0.2.1/tor_ocr-0.2.1-py3-none-any.whl
+$ pip install ./tor_ocr.whl
+```
+
+If wanting to install from source, clone the repo, install [poetry](https://poetry.eustace.io), and run `poetry install`:
+
+```
+$ git clone git@github.com:GrafeasGroup/tor_ocr.git ./tor_ocr
+$ cd ./tor_ocr
+$ pip install poetry
+$ poetry install
 ```
 
 ## High-level functionality
