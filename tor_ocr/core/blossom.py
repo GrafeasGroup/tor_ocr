@@ -41,8 +41,7 @@ class BlossomAPI(object):
             method=method,
             url=self.base_url+path,
             json=json,
-            data=data,
-            params=paramsgithub
+            data=data
         )
 
         for _ in range(3):
