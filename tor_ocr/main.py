@@ -217,10 +217,6 @@ def run(config):
         f'Found a new post, ID {new_post}'
     )
 
-    b = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
-    blossom_submission = b.get("/submission/2/").json()
-    logging.info(blossom_submission)
-
     url = config.r.submission(id=clean_id(new_post)).url
     try:
         result = process_image(url)
@@ -230,7 +226,7 @@ def run(config):
         )
         return
 
-    logging.debug(f'result: {result}')
+    logging.info(f'result: {result}')
 
     if not result:
         logging.info('Result was none! Skipping!')
@@ -245,6 +241,29 @@ def run(config):
     )
 
     tor_post = config.r.submission(id=clean_id(tor_post_id))
+
+    b_api = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
+
+    # hard coded for testing
+    blossom_submission = b_api.get("/submission/2/").json()
+
+    # submission for tor_post_id does not exist yet, do we need to create it?
+    # blossom_submission = b_api.get(f"/submission/{tor_post_id}/").json()
+
+    logging.info(blossom_submission)
+
+    if not blossom_submission['has_ocr_transcription']:
+        transcription_data = {
+            "submission_id": blossom_submission['submission_id'],
+            "transcription_id": "string",
+            "completion_method": "string",
+            "v_id": blossom_submission['claimed_by'],
+            "t_id": 2,
+            "t_url": "string",
+            "t_text": result['text']
+        }
+        b_api.post('/transcription/', transcription_data)
+
 
     thing_to_reply_to = tor_post.reply(
         _(base_comment.format(result['process_time_in_ms'] / 1000))
