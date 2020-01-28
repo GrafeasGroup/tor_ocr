@@ -47,9 +47,6 @@ b_api = BlossomAPI(
     api_base_url=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL')
 )
 
-api_base_url: str=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL'),
-login_url: str=os.environ.get('TOR_OCR_BLOSSOM_API_LOGIN_URL')
-
 # "helloworld" is a valid API key, however use it sparingly
 __OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
 # __OCR_API_URLS__ = ['https://api.ocr.space/parse/image']  # free API url
@@ -277,7 +274,7 @@ def run(config):
         thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
 
     # Get submission from blossom, hard coded for testing purposes
-    blossom_submission = b_api.get("/submission/1/").json()
+    blossom_submission = b_api.get("/submission/4/").json()
     # submission with tor_post_id does not exist yet, will be eventually posted by tor_bot
     # try:
     #   blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
