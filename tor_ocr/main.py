@@ -256,10 +256,6 @@ def run(config):
     )
 
     for counter, chunk in enumerate(chunks(result['text'], 9000)):
-        # grab first comment for transcription url
-        if counter==0:
-            first_comment = thing_to_reply_to
-
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
@@ -273,8 +269,12 @@ def run(config):
 
         thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
 
+        # grab first comment for transcription url
+        if counter==0:
+            first_comment = thing_to_reply_to
+
     # Get submission from blossom, hard coded for testing purposes
-    blossom_submission = b_api.get("/submission/4/").json()
+    blossom_submission = b_api.get("/submission/1/").json()
     # submission with tor_post_id does not exist yet, will be eventually posted by tor_bot
     # try:
     #   blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
