@@ -39,7 +39,7 @@ Bot:
     u_tor_post_id.reply(ocr_magic)
 """
 dotenv.load_dotenv()
-# TODO: set the client credentials to environment variables
+
 b_api = BlossomAPI(
     email=os.environ.get('TOR_OCR_EMAIL'), 
     password=os.environ.get('TOR_OCR_PASSWORD'), 
