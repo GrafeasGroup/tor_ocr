@@ -4,6 +4,7 @@ import re
 import time
 
 import requests
+import dotenv
 from requests.exceptions import ConnectTimeout, RequestException
 from tor_ocr.core.blossom import BlossomAPI
 
@@ -37,9 +38,17 @@ Bot:
 
     u_tor_post_id.reply(ocr_magic)
 """
-
+dotenv.load_dotenv()
 # TODO: set the client credentials to environment variables
-b_api = BlossomAPI(email='joe@grafeas.org', password='asdf', api_key="el9qKhdv.kTokbAbt1kyfhCQattZyxXLneKoEBHGZ")
+b_api = BlossomAPI(
+    email=os.environ.get('TOR_OCR_EMAIL'), 
+    password=os.environ.get('TOR_OCR_PASSWORD'), 
+    api_key='TOR_OCR_BLOSSOM_API_KEY', 
+    api_base_url=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL')
+)
+
+api_base_url: str=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL'),
+login_url: str=os.environ.get('TOR_OCR_BLOSSOM_API_LOGIN_URL')
 
 # "helloworld" is a valid API key, however use it sparingly
 __OCR_API_KEY__ = os.getenv('OCR_API_KEY', 'helloworld')
@@ -245,22 +254,18 @@ def run(config):
 
     tor_post = config.r.submission(id=clean_id(tor_post_id))
 
-    # Get submission from blossom
-    blossom_submission = b_api.get("/submission/2/").json()
-    # blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
-    # submission for tor_post_id does not exist yet, will be eventually posted by tor_bot
-
-    logging.info(blossom_submission)
-
     thing_to_reply_to = tor_post.reply(
         _(base_comment.format(result['process_time_in_ms'] / 1000))
     )
 
     for counter, chunk in enumerate(chunks(result['text'], 9000)):
+        # grab first comment for transcription url
+        if counter==0:
+            first_comment = thing_to_reply_to
+
         # end goal: if something is over 9000 characters long, we
         # should post a top level comment, then keep replying to
         # the comments we make until we run out of chunks.
-
         chunk = escape_reddit_links(
             chunk.replace(
                 '\r\n', '\n\n'
@@ -269,11 +274,15 @@ def run(config):
             )
         )
 
-        # assign that variable after this line, clean_id(cachedvalue.fullname)
         thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
 
-        if counter==0:
-            first_comment = thing_to_reply_to
+    # Get submission from blossom, hard coded for testing purposes
+    blossom_submission = b_api.get("/submission/1/").json()
+    # submission with tor_post_id does not exist yet, will be eventually posted by tor_bot
+    # try:
+    #   blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
+    # except:
+    #     logging.error(f'submission with submission_id:{tor_post_id} not found')
 
     if not blossom_submission['has_ocr_transcription']:
         new_transcription_data = {
@@ -297,9 +306,13 @@ def noop(cfg):
 def get_volunteer_id(reddit_username):
     #remove first 2 characters (eg: u/transcribot => transcribot)
     formatted_name = reddit_username[2:]
-    volunteer_record = b_api.get(f"/volunteer/?username={formatted_name}").json()['results'][0]
-    volunteer_id = volunteer_record['id']
-    return volunteer_id
+    try:
+        volunteer_record = b_api.get(f"/volunteer/?username={formatted_name}").json()['results'][0]
+        volunteer_id = volunteer_record['id']
+        return volunteer_id
+    except:
+        logging.error(f'volunteer with username:{formatted_name} not found')
+        return
 
 def main():
     config.ocr_delay = 2
