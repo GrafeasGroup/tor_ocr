@@ -43,7 +43,7 @@ dotenv.load_dotenv()
 b_api = BlossomAPI(
     email=os.environ.get('TOR_OCR_EMAIL'), 
     password=os.environ.get('TOR_OCR_PASSWORD'), 
-    api_key='TOR_OCR_BLOSSOM_API_KEY', 
+    api_key=os.environ.get('TOR_OCR_BLOSSOM_API_KEY'), 
     api_base_url=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL'),
     api_login_url=os.environ.get('TOR_OCR_BLOSSOM_API_LOGIN_URL')
 )
