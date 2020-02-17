@@ -274,24 +274,24 @@ def run(config):
         if counter==0:
             first_comment = thing_to_reply_to
 
-    # Get submission from blossom, hard coded for testing purposes
-    blossom_submission = b_api.get("/submission/1/").json()
-    # submission with tor_post_id does not exist yet, will be eventually posted by tor_bot
-    # try:
-    #   blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
-    # except:
-    #     logging.error(f'submission with submission_id:{tor_post_id} not found')
-
-    if not blossom_submission['has_ocr_transcription']:
-        new_transcription_data = {
-            "submission_id": blossom_submission['submission_id'],
-            "completion_method": "tor_ocr",
-            "v_id": config.v_id,
-            "t_id": tor_post_id,
-            "t_url": "https://reddit.com"+first_comment.permalink,
-            "t_text": result['text']
-        }
-        b_api.post('/transcription/', new_transcription_data)
+    
+    blossom_submission = b_api.get(f"/submission/?submission_id={tor_post_id}/").json()
+    
+    if blossom_submission['count'] != 0:
+        if not blossom_submission['has_ocr_transcription']:
+            new_transcription_data = {
+                "submission_id": blossom_submission['submission_id'],
+                "completion_method": "tor_ocr",
+                "v_id": config.v_id,
+                "t_id": tor_post_id,
+                "t_url": "https://reddit.com"+first_comment.permalink,
+                "t_text": result['text']
+            }
+            b_api.post('/transcription/', new_transcription_data)
+        else:
+            logging.info(f"submission already has transcription")
+    else:
+        logging.info(f"no submission found for submission id {tor_post_id}")
 
     config.redis.delete(new_post)
 
@@ -301,9 +301,10 @@ def noop(cfg):
     logging.info('Loop!')
 
 
-def get_volunteer_id(reddit_username):
-    #remove first 2 characters (eg: u/transcribot => transcribot)
-    formatted_name = reddit_username[2:]
+def get_volunteer_id(username):
+    # attempt to remove first 2 characters (eg: u/transcribot => transcribot)
+    formatted_name = username[2:] if username.startswith("u/") else username
+
     try:
         volunteer_record = b_api.get(f"/volunteer/?username={formatted_name}").json()['results'][0]
         volunteer_id = volunteer_record['id']
