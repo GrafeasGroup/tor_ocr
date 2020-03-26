@@ -46,7 +46,7 @@ Monitoring daemon (via Redis queue):
 
 - Pull job (by post id) off of queue:
   - Get image URL
-  - Use orc.space API on the image
+  - Use ocr.space API on the image
   - If OCR successful:
     - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks, replying to previous comment when [over 9000][over-9000] characters
 
