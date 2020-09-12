@@ -75,10 +75,9 @@ python-versions = ">=3.6"
 version = "0.0.1"
 
 [package.source]
-reference = "0177c18d81dfa0db0dd197b010808dd368ad1d21"
+reference = "2e70b1af87c5672d2cda4c21929028c488d9fcda"
 type = "git"
 url = "https://github.com/GrafeasGroup/blossom-wrapper.git"
-
 [[package]]
 category = "main"
 description = "Automatic error monitoring for django, flask, etc."

@@ -20,6 +20,15 @@ Reach out to Blossom for post objects
 - post the auto-generated OCR text on each submission
 - patch back the reddit ID of the primary comment back to Blossom
 """
+dotenv.load_dotenv()
+
+b_api = BlossomAPI(
+    email=os.environ.get('TOR_OCR_EMAIL'),
+    password=os.environ.get('TOR_OCR_PASSWORD'),
+    api_key=os.environ.get('TOR_OCR_BLOSSOM_API_KEY'),
+    api_base_url=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL'),
+    login_url=os.environ.get('TOR_OCR_BLOSSOM_API_LOGIN_URL')
+)
 
 NOOP_MODE = bool(os.getenv("NOOP_MODE", ""))
 DEBUG_MODE = bool(os.getenv("DEBUG_MODE", ""))
@@ -44,6 +53,7 @@ def get_id_from_url(url: str) -> int:
 # noinspection PyShadowingNames
 def run(config):
     time.sleep(config.ocr_delay)
+
 
     new_posts = config.blossom.get_ocr_transcriptions().data
     if len(new_posts) == 0:
@@ -106,6 +116,18 @@ def noop(cfg):
     time.sleep(5)
     logging.info("Loop!")
 
+
+def get_volunteer_id(username):
+    # attempt to remove first 2 characters (eg: u/transcribot => transcribot)
+    formatted_name = username[2:] if username.startswith("u/") else username
+
+    try:
+        volunteer_record = b_api.get(f"/volunteer/?username={formatted_name}").json()['results'][0]
+        volunteer_id = volunteer_record['id']
+        return volunteer_id
+    except:
+        logging.error(f'volunteer with username:{formatted_name} not found')
+        return
 
 def main():
     config.ocr_delay = 20

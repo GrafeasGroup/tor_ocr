@@ -103,3 +103,7 @@ ENV/
 .idea/*
 praw.ini
 heartbeat.port
+
+.vscode
+
+test.py
