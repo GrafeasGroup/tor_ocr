@@ -1,7 +1,5 @@
-import logging
-import os
-import random
 import datetime
+import os
 
 # Load configuration regardless of if bugsnag is setup correctly
 try:
@@ -11,9 +9,7 @@ except ImportError:
     # don't want to bomb out completely
     bugsnag = None
 
-from tor_ocr.core import __version__
-from tor_ocr.core import __HEARTBEAT_FILE__
-
+import pkg_resources
 
 _missing = object()
 
@@ -207,50 +203,11 @@ class Config(object):
     last_post_scan_time = datetime.datetime(1970, 1, 1, 1, 1, 1)
 
     @cached_property
-    def redis(self):
-        """
-        Lazy-loaded redis connection
-        """
-        from redis import StrictRedis
-        import redis.exceptions
-
-        try:
-            url = os.environ.get('REDIS_CONNECTION_URL',
-                                 'redis://localhost:6379/0')
-            conn = StrictRedis.from_url(url)
-            conn.ping()
-        except redis.exceptions.ConnectionError:
-            logging.fatal("Redis server is not running")
-            raise
-        return conn
-
-    @cached_property
     def tor(self):
         if self.debug_mode:
             return self.r.subreddit('ModsOfTor')
         else:
             return self.r.subreddit('transcribersofreddit')
-
-    @cached_property
-    def heartbeat_port(self):
-        try:
-            with open(__HEARTBEAT_FILE__, 'r') as port_file:
-                port = int(port_file.readline().strip())
-            logging.debug('Found existing port saved on disk')
-            return port
-        except OSError:
-            pass
-
-        while True:
-            port = random.randrange(40000, 40200)  # is 200 ports too much?
-            if self.redis.sismember('active_heartbeat_ports', port) == 0:
-                self.redis.sadd('active_heartbeat_ports', port)
-
-                with open(__HEARTBEAT_FILE__, 'w') as port_file:
-                    port_file.write(str(port))
-                logging.debug(f'generated port {port} and saved to disk')
-
-                return port
 
 
 try:
@@ -261,14 +218,13 @@ except OSError:
 if bugsnag and Config.bugsnag_api_key:
     bugsnag.configure(
         api_key=Config.bugsnag_api_key,
-        app_version=__version__
+        app_version=pkg_resources.get_distribution('tor_ocr').version
     )
 
 try:
     Config.modchat_api_url = open('modchat.key').readline().strip()
 except OSError:
     Config.modchat_api_url = os.environ.get('MODCHAT_API_URL', None)
-
 
 try:
     Config.sentry_api_url = open('sentry.key').readline().strip()
@@ -277,7 +233,6 @@ except OSError:
 
 # ----- Compatibility -----
 config = Config()
-config.core_version = __version__
 config.video_domains = []
 config.audio_domains = []
 config.image_domains = []
@@ -297,8 +252,5 @@ config.tor_mods = []
 
 # section for gifs
 config.no_gifs = []
-
-# enables debug information for the cherrypy heartbeat server
-config.heartbeat_logging = False
 
 config.modchat = Config.modchat
