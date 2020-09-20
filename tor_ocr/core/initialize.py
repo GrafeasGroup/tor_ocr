@@ -33,6 +33,7 @@ def get_blossom_connection():
         email=os.getenv("BLOSSOM_EMAIL"),
         password=os.getenv("BLOSSOM_PASSWORD"),
         api_key=os.getenv("BLOSSOM_API_KEY"),
+        api_base_url=os.getenv("BLOSSOM_URL")
     )
 
 
