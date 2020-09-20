@@ -1,11 +1,13 @@
 import logging
 import os
 import time
+from typing import Any
 from urllib.parse import urlparse
 
 import pkg_resources
+import dotenv
 
-from tor_ocr.core.config import config
+from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
 from tor_ocr.core.initialize import build_bot
 from tor_ocr.strings import base_comment
@@ -21,14 +23,6 @@ Reach out to Blossom for post objects
 - patch back the reddit ID of the primary comment back to Blossom
 """
 dotenv.load_dotenv()
-
-b_api = BlossomAPI(
-    email=os.environ.get('TOR_OCR_EMAIL'),
-    password=os.environ.get('TOR_OCR_PASSWORD'),
-    api_key=os.environ.get('TOR_OCR_BLOSSOM_API_KEY'),
-    api_base_url=os.environ.get('TOR_OCR_BLOSSOM_API_BASE_URL'),
-    login_url=os.environ.get('TOR_OCR_BLOSSOM_API_LOGIN_URL')
-)
 
 NOOP_MODE = bool(os.getenv("NOOP_MODE", ""))
 DEBUG_MODE = bool(os.getenv("DEBUG_MODE", ""))
@@ -51,9 +45,8 @@ def get_id_from_url(url: str) -> int:
 
 
 # noinspection PyShadowingNames
-def run(config):
+def run(config: Config) -> None:
     time.sleep(config.ocr_delay)
-
 
     new_posts = config.blossom.get_ocr_transcriptions().data
     if len(new_posts) == 0:
@@ -63,8 +56,8 @@ def run(config):
     logging.info(f"Retrieved {len(new_posts)} unprocessed posts")
 
     for post in new_posts:
-        # there should be two transcriptions: one from the volunteer
-        # and one from us. Need to find ours.
+        # There will probably only be one transcription, but if for some reason
+        # a volunteer beat us to it, then we'll have to dig ours out of the pile.
         found_our_own_transcription = False
         for transcription_url in post["transcription_set"]:
             transcription_obj = config.blossom.get_transcription(
@@ -85,6 +78,7 @@ def run(config):
             )
             continue
 
+        # we'll get back a response with a list of one element.
         # noinspection PyUnboundLocalVariable
         data = transcription_obj.data[0]
 
@@ -112,22 +106,10 @@ def run(config):
         )
 
 
-def noop(cfg):
+def noop(*args: Any) -> None:
     time.sleep(5)
     logging.info("Loop!")
 
-
-def get_volunteer_id(username):
-    # attempt to remove first 2 characters (eg: u/transcribot => transcribot)
-    formatted_name = username[2:] if username.startswith("u/") else username
-
-    try:
-        volunteer_record = b_api.get(f"/volunteer/?username={formatted_name}").json()['results'][0]
-        volunteer_id = volunteer_record['id']
-        return volunteer_id
-    except:
-        logging.error(f'volunteer with username:{formatted_name} not found')
-        return
 
 def main():
     config.ocr_delay = 20
