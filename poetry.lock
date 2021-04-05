@@ -254,19 +254,19 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs", "pytest-flake8", "pytes
 
 [[package]]
 name = "praw"
-version = "5.0.1"
+version = "5.4.0"
 description = "PRAW, an acronym for `Python Reddit API Wrapper`, is a python package that allows for simple access to reddit's API."
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-prawcore = ">=0.11.0,<0.12"
+prawcore = ">=0.14.0,<0.15"
 update-checker = ">=0.16"
 
 [[package]]
 name = "prawcore"
-version = "0.11.0"
+version = "0.14.0"
 description = "Low-level communication layer for PRAW 4+."
 category = "main"
 optional = false
@@ -535,7 +535,7 @@ ci = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "ab92a7144ca888762aeb541305059f0d3ab76b5fb35977ef33bd824ee8d950a1"
+content-hash = "b9c3ec4c916336009febec955e883fb4694b421063cd49a8f7106908b1b17a58"
 
 [metadata.files]
 atomicwrites = [
@@ -665,12 +665,12 @@ portend = [
     {file = "portend-2.6.tar.gz", hash = "sha256:600dd54175e17e9347e5f3d4217aa8bcf4bf4fa5ffbc4df034e5ec1ba7cdaff5"},
 ]
 praw = [
-    {file = "praw-5.0.1-py2.py3-none-any.whl", hash = "sha256:1b8ed25291494d7958fd8db7b09630ac912344869de75e04da98fcf57ace6e1a"},
-    {file = "praw-5.0.1.tar.gz", hash = "sha256:741482ec00d28d40ce4b76f7fdbd19260f1d4aa4ea34e14940f30ce3f8c5132d"},
+    {file = "praw-5.4.0-py2.py3-none-any.whl", hash = "sha256:e4196a2ec10b758785e293d2cf6f25c5f97c8021b9314fd81797492815639cbd"},
+    {file = "praw-5.4.0.tar.gz", hash = "sha256:04dc118381383dc5d2ae7a16e23d074fb42abe49659a9777828c062fc90780b7"},
 ]
 prawcore = [
-    {file = "prawcore-0.11.0-py2.py3-none-any.whl", hash = "sha256:f4341194358672c8751edad57787e4c416283dcdb0ca21e801760b90e3200b8b"},
-    {file = "prawcore-0.11.0.tar.gz", hash = "sha256:06758801e928ff8d6a3ca7da832b1e74f7f6b41a6b74ce36d892805b190ff712"},
+    {file = "prawcore-0.14.0-py2.py3-none-any.whl", hash = "sha256:a8b6fda0d1f8f3135e888e4257a4e338e9866c39262031cd5a8cb91f9024f64b"},
+    {file = "prawcore-0.14.0.tar.gz", hash = "sha256:cc5c32ee8c1d1de212ade0ea319a21d3448cb151cb1ccb7335ba76ca96cf8f37"},
 ]
 py = [
     {file = "py-1.8.0-py2.py3-none-any.whl", hash = "sha256:64f65755aee5b381cea27766a3a147c3f15b9b6b9ac88676de66ba2ae36793fa"},
