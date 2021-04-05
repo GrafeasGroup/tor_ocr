@@ -3,10 +3,15 @@
 We follow [Semantic Versioning](http://semver.org/) as a way of measuring stability of an update. This
 means we will never make a backwards-incompatible change within a major version of the project.
 
-## [UNRELEASED]
+## [0.2.3] -- 2021-04-05
+
+- Odd error with PRAW in https://github.com/GrafeasGroup/tor necessitates a core library upgrade
+
+## [0.2.2] -- 2021-01-26
 
 - Converts `setup.py` to Poetry tooling for easier development and package management
 - Makes cleaning the Reddit ID more resilient (passing an already-clean id through without issue)
+- CLI args for better testing
 
 ## [0.2.1] -- 2019-06-16
 

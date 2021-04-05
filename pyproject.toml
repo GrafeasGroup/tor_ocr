@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tor_ocr"
-version = "0.2.2"
+version = "0.2.3"
 description = "An AI attempting to transcribe contents of /r/TranscribersOfReddit"
 authors = ["Grafeas Group <devs@grafeas.org>"]
 license = "MIT"
@@ -15,7 +15,7 @@ exclude = ['test', 'test.*', '*.test.*', '*.test']
 
 [tool.poetry.dependencies]
 python = "^3.6"
-praw = "=5.0.1"
+praw = "^5.0.1"
 redis = "^2"
 sh = "^1.12"
 cherrypy = "^18.2"
