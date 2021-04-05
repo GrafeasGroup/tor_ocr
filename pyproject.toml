@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tor_ocr"
-version = "0.2.2"
+version = "0.2.3"
 description = "An AI attempting to transcribe contents of /r/TranscribersOfReddit"
 authors = ["Grafeas Group <devs@grafeas.org>"]
 license = "MIT"
