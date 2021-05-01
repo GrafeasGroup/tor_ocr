@@ -3,6 +3,10 @@
 We follow [Semantic Versioning](http://semver.org/) as a way of measuring stability of an update. This
 means we will never make a backwards-incompatible change within a major version of the project.
 
+## [UNRELEASED]
+
+- "Source" link in the bot footer now redirects to this repo instead of the u/tor one
+
 ## [0.2.3] -- 2021-04-05
 
 - Odd error with PRAW in https://github.com/GrafeasGroup/tor necessitates a core library upgrade
