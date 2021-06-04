@@ -28,10 +28,11 @@ dotenv.load_dotenv()
 NOOP_MODE = bool(os.getenv('NOOP_MODE', ''))
 DEBUG_MODE = bool(os.getenv('DEBUG_MODE', ''))
 
+__VERSION__ = '0.3.0'
 
 def parse_arguments():
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("tor_ocr").version)
+    parser.add_argument('--version', action='version', version=__VERSION__)
     parser.add_argument('--debug', action='store_true', default=DEBUG_MODE, help='Puts bot in dev-mode using non-prod credentials')
     parser.add_argument('--noop', action='store_true', default=NOOP_MODE, help='Just run the daemon, but take no action (helpful for testing infrastructure changes)')
 
@@ -127,7 +128,7 @@ def main():
     config.debug_mode = opt.debug
     bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'bot_ocr')
 
-    build_bot(bot_name, pkg_resources.get_distribution("tor_ocr").version)
+    build_bot(bot_name, __VERSION__)
     if opt.noop:
         run_until_dead(noop)
     else:
