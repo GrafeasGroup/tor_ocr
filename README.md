@@ -11,16 +11,11 @@ This bot is still in training and might not be able to recognize everything it
 attempts. Some transcriptions might be complete trash, but the hope is that it will
 be a start to a more legitimate, volunteer-written transcription.
 
-## Resources
-
-- Redis (tracking completed posts and queue system)
-- [ocr.space](https://ocr.space) (OCR solution)
-
 > **NOTE:**
 >
 > This code is not complete. The praw.ini file is required to run the bots and
 > contains information such as the useragents and certain secrets. It is built
-> for Python 3.6.
+> for Python 3.8.
 
 ## Installation
 
@@ -44,11 +39,8 @@ $ poetry install
 
 Monitoring daemon (via Redis queue):
 
-- Pull job (by post id) off of queue:
-  - Get image URL
-  - Use orc.space API on the image
-  - If OCR successful:
-    - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks, replying to previous comment when [over 9000][over-9000] characters
+- Ask [Blossom](https://github.com/grafeasgroup/blossom) for posts that have an OCR transcription that hasn't been posted yet
+  - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks, replying to previous comment when [over 9000][over-9000] characters
 
 [over-9000]: https://tenor.com/view/dragonball-z-super-saiyan-charging-yelling-gif-4987448
 

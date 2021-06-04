@@ -5,6 +5,4 @@ base_comment = (
     'for your work!\n\nPlease note that any formatting instructions above '
     'override whatever I provide, so please format my content accordingly '
     'if you choose to use it. '
-    '\n\n'
-    'Process time: {}s'
 )
