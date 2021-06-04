@@ -16,7 +16,7 @@ homepage = "https://github.com/GrafeasGroup/tor_ocr"
 exclude = ['test', 'test.*', '*.test.*', '*.test']
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 praw = "^7"
 sh = "^1.12"
 bugsnag = "^3.6"
@@ -29,6 +29,8 @@ better-exceptions = "^0.2.2"
 pytest = "^5.1"
 pytest-cov = "^2.7"
 black = "^20.8b1"
+flake8 = "^3.7.9"
+mypy = "^0.761"
 
 [tool.poetry.scripts]
 tor-apprentice = "tor_ocr.main:main"
