@@ -126,7 +126,7 @@ def main():
     opt = parse_arguments()
     config.ocr_delay = 2
     config.debug_mode = opt.debug
-    bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'bot_ocr')
+    bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'tor_ocr')
 
     build_bot(bot_name, __VERSION__)
     if opt.noop:
