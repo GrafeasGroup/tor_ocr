@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 import pkg_resources
 import dotenv
+import praw
 
 from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
@@ -95,8 +96,14 @@ def run(config: Config) -> None:
 
         tor_post = config.r.submission(url=post["tor_url"])
 
-        thing_to_reply_to = tor_post.reply(_(base_comment))
-
+        try:
+            thing_to_reply_to = tor_post.reply(_(base_comment))
+        except praw.exceptions.RedditAPIException:
+            logging.info("Found post that has aged out; marking as cannot OCR.")
+            config.blossom.patch(
+                f"submission/{get_id_from_url(data['submission'])}", data={"cannot_ocr": True}
+            )
+            continue
         # we need to keep track of each of the comments we create in case this
         # is a really long transcription. We want to send blossom the ID of the
         # comment that actually starts the transcription, which should always
