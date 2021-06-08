@@ -1,7 +1,7 @@
 import logging
 import os
 
-from blossom_wrapper import BlossomAPI
+from blossom_wrapper import BlossomAPI, BlossomStatus
 from bugsnag.handlers import BugsnagHandler
 from praw import Reddit
 
@@ -38,9 +38,10 @@ def get_blossom_connection():
 
 
 def get_me_info(config):
-    return config.blossom.get(
-        "volunteer/", params={"username": "transcribot"}
-    ).json()["results"][0]
+    result = config.blossom.get_user("transcribot")
+    if result.status == BlossomStatus.ok:
+        return result.data
+    raise ValueError("Something went wrong while retrieving the user from Blossom.")
 
 
 def build_bot(name, version):

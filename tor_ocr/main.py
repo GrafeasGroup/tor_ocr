@@ -5,9 +5,9 @@ import time
 from typing import Any
 from urllib.parse import urlparse
 
-import pkg_resources
 import dotenv
 import praw
+from requests import HTTPError
 
 from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
@@ -100,9 +100,12 @@ def run(config: Config) -> None:
             thing_to_reply_to = tor_post.reply(_(base_comment))
         except praw.exceptions.RedditAPIException:
             logging.info("Found post that has aged out; marking as cannot OCR.")
-            config.blossom.patch(
-                f"submission/{get_id_from_url(data['submission'])}", data={"cannot_ocr": True}
-            )
+            try:
+                config.blossom.patch(
+                    f"submission/{get_id_from_url(data['submission'])}", data={"cannot_ocr": True}
+                )
+            except HTTPError:
+                logging.error(f"Updating the Submission {data['submission']} failed.")
             continue
         # we need to keep track of each of the comments we create in case this
         # is a really long transcription. We want to send blossom the ID of the
@@ -118,10 +121,14 @@ def run(config: Config) -> None:
             comment_id_list += [thing_to_reply_to.fullname]
 
         logging.info(f"Patching {data['id']}...")
-        config.blossom.patch(
-            f"transcription/{data['id']}/",
-            data={"original_id": comment_id_list[1]},
-        )
+        try:
+            config.blossom.patch(
+                f"transcription/{data['id']}/",
+                data={"original_id": comment_id_list[1]},
+            )
+        except HTTPError:
+            logging.error(f"Updating the Transcription {data['id']}"
+                          f"'s status in Blossom failed.")
 
 
 def noop(*args: Any) -> None:
