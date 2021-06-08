@@ -31,6 +31,7 @@ DEBUG_MODE = bool(os.getenv('DEBUG_MODE', ''))
 
 __VERSION__ = '0.3.0'
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument('--version', action='version', version=__VERSION__)
