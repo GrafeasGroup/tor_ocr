@@ -1,12 +1,11 @@
-from typing import Any, Dict, List, Optional
 import argparse
 import logging
 import os
 import time
 from typing import Any, List
+from typing import Dict, Optional
 from urllib.parse import urlparse
 
-import pkg_resources
 import dotenv
 import praw
 
@@ -27,16 +26,27 @@ Reach out to Blossom for post objects
 """
 dotenv.load_dotenv()
 
-NOOP_MODE = bool(os.getenv('NOOP_MODE', ''))
-DEBUG_MODE = bool(os.getenv('DEBUG_MODE', ''))
+NOOP_MODE = bool(os.getenv("NOOP_MODE", ""))
+DEBUG_MODE = bool(os.getenv("DEBUG_MODE", ""))
 
-__VERSION__ = '0.3.0'
+__VERSION__ = "0.3.0"
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument('--version', action='version', version=__VERSION__)
-    parser.add_argument('--debug', action='store_true', default=DEBUG_MODE, help='Puts bot in dev-mode using non-prod credentials')
-    parser.add_argument('--noop', action='store_true', default=NOOP_MODE, help='Just run the daemon, but take no action (helpful for testing infrastructure changes)')
+    parser.add_argument("--version", action="version", version=__VERSION__)
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=DEBUG_MODE,
+        help="Puts bot in dev-mode using non-prod credentials",
+    )
+    parser.add_argument(
+        "--noop",
+        action="store_true",
+        default=NOOP_MODE,
+        help="Just run the daemon, but take no action (helpful for testing infrastructure changes)",
+    )
 
     return parser.parse_args()
 
@@ -49,7 +59,7 @@ def chunks(s: str, n: int) -> str:
     :param n: number of characters to cut the chunk at.
     """
     for start in range(0, len(s), n):
-        yield s[start: (start + n)]
+        yield s[start : (start + n)]
 
 
 def get_id_from_url(url: str) -> int:
@@ -61,7 +71,9 @@ def get_id_from_url(url: str) -> int:
 def run(config: Config) -> None:
     time.sleep(config.ocr_delay)
 
-    new_posts: Optional[List[Dict[str, Any]]] = config.blossom.get_ocr_transcriptions().data
+    new_posts: Optional[
+        List[Dict[str, Any]]
+    ] = config.blossom.get_ocr_transcriptions().data
     if len(new_posts) == 0:
         logging.debug("No new posts found; sleeping.")
         return
@@ -116,7 +128,7 @@ def main():
     opt = parse_arguments()
     config.ocr_delay = 2
     config.debug_mode = opt.debug
-    bot_name = 'debug' if config.debug_mode else os.environ.get('BOT_NAME', 'tor_ocr')
+    bot_name = "debug" if config.debug_mode else os.environ.get("BOT_NAME", "tor_ocr")
 
     build_bot(bot_name, __VERSION__)
     if opt.noop:
