@@ -1,8 +1,9 @@
+from typing import Any, Dict, List, Optional
 import argparse
 import logging
 import os
 import time
-from typing import Any
+from typing import Any, List
 from urllib.parse import urlparse
 
 import pkg_resources
@@ -60,48 +61,30 @@ def get_id_from_url(url: str) -> int:
 def run(config: Config) -> None:
     time.sleep(config.ocr_delay)
 
-    new_posts = config.blossom.get_ocr_transcriptions().data
+    new_posts: Optional[List[Dict[str, Any]]] = config.blossom.get_ocr_transcriptions().data
     if len(new_posts) == 0:
         logging.debug("No new posts found; sleeping.")
         return
 
     logging.info(f"Retrieved {len(new_posts)} unprocessed posts")
 
-    for post in new_posts:
-        # There will probably only be one transcription, but if for some reason
-        # a volunteer beat us to it, then we'll have to dig ours out of the pile.
-        found_our_own_transcription = False
-        for transcription_url in post["transcription_set"]:
-            transcription_obj = config.blossom.get_transcription(
-                id=get_id_from_url(transcription_url)
-            )
-            if get_id_from_url(transcription_obj.data[0]["author"]) != config.me["id"]:
-                continue
-            found_our_own_transcription = True
-            logging.debug("Found our transcription!")
-            break
+    for ocr_obj in new_posts:
+        # Each ocr_obj looks like this:
+        # {
+        #   'id': 1,  # blossom submission ID
+        #   'tor_url': None,  # the url to the ToR post
+        #   'transcription__id': 1,  # blossom ID of the transcription
+        #   'transcription__text': 'aaaa...'  # what it says
+        # }
 
-        if not found_our_own_transcription:
-            # how did we get here? We must not have found our own work from the API...
-            # that would be a Blossom error. Skip this post.
-            logging.error(
-                f"It looks like we got a post without a transcription..."
-                f" check submission {post['id']}"
-            )
-            continue
-
-        # we'll get back a response with a list of one element.
-        # noinspection PyUnboundLocalVariable
-        data = transcription_obj.data[0]
-
-        tor_post = config.r.submission(url=post["tor_url"])
+        tor_post = config.r.submission(url=ocr_obj["tor_url"])
 
         try:
             thing_to_reply_to = tor_post.reply(_(base_comment))
         except praw.exceptions.RedditAPIException:
             logging.info("Found post that has aged out; marking as cannot OCR.")
             config.blossom.patch(
-                f"submission/{get_id_from_url(data['submission'])}", data={"cannot_ocr": True}
+                f"submission/{ocr_obj['id']}", data={"cannot_ocr": True}
             )
             continue
         # we need to keep track of each of the comments we create in case this
@@ -110,16 +93,16 @@ def run(config: Config) -> None:
         # be object 1 in the list (object 0 is the "hi I'm a bot" message).
         comment_id_list = [thing_to_reply_to.fullname]
 
-        for chunk in chunks(data["text"], 9000):
+        for chunk in chunks(ocr_obj["text"], 9000):
             # end goal: if something is over 9000 characters long, we
             # should post a top level comment, then keep replying to
             # the comments we make until we run out of chunks.
             thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
             comment_id_list += [thing_to_reply_to.fullname]
 
-        logging.info(f"Patching {data['id']}...")
+        logging.info(f"Patching {ocr_obj['transcription__id']}...")
         config.blossom.patch(
-            f"transcription/{data['id']}/",
+            f"transcription/{ocr_obj['transcription__id']}/",
             data={"original_id": comment_id_list[1]},
         )
 
