@@ -73,7 +73,7 @@ def run(config: Config) -> None:
 
     new_posts: Optional[
         List[Dict[str, Any]]
-    ] = config.blossom.get_ocr_transcriptions().data
+    ] = config.blossom.get_ocr_transcriptions().data['data']
     if len(new_posts) == 0:
         logging.debug("No new posts found; sleeping.")
         return
