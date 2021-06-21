@@ -1,5 +1,9 @@
+from typing import Any, Callable, Dict
 import datetime
 import os
+
+from blossom_wrapper import BlossomAPI
+from praw import Reddit
 
 # Load configuration regardless of if bugsnag is setup correctly
 try:
@@ -40,13 +44,13 @@ class cached_property(object):
     # as expected because the lookup logic is replicated in __get__ for
     # manual invocation.
 
-    def __init__(self, func, name=None, doc=None):
+    def __init__(self, func: Callable, name: str=None, doc: str=None) -> None:
         self.__name__ = name or func.__name__
         self.__module__ = func.__module__
         self.__doc__ = doc or func.__doc__
         self.func = func
 
-    def __get__(self, obj, _type=None):
+    def __get__(self, obj: Any, _type: Any=None) -> Any:
         if obj is None:
             return self
         value = obj.__dict__.get(self.__name__, _missing)
@@ -63,19 +67,23 @@ class Config(object):
     """
 
     # API key for later overwriting based on contents of filesystem
-    bugsnag_api_key = None
+    bugsnag_api_key: str = None
 
-    debug_mode = False
+    debug_mode: bool = False
 
     # Global flag to enable/disable placing the triggers
     # for the OCR bot
-    OCR = True
+    OCR: bool = True
+    ocr_delay: int = None
 
     # Name of the bot
-    name = None
-    bot_version = '0.0.0'  # this should get overwritten by the bot process
+    name: str = None
+    bot_version: str = '0.0.0'  # this should get overwritten by the bot process
+    blossom: BlossomAPI = None
+    r: Reddit = None
+    me: Dict = None  # blossom object of transcribot
 
-    last_post_scan_time = datetime.datetime(1970, 1, 1, 1, 1, 1)
+    last_post_scan_time: datetime.datetime = datetime.datetime(1970, 1, 1, 1, 1, 1)
 
     @cached_property
     def tor(self):
