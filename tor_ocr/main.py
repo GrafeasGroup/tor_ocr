@@ -105,7 +105,7 @@ def run(config: Config) -> None:
         # be object 1 in the list (object 0 is the "hi I'm a bot" message).
         comment_id_list = [thing_to_reply_to.fullname]
 
-        for chunk in chunks(ocr_obj["text"], 9000):
+        for chunk in chunks(ocr_obj["transcription__text"], 9000):
             # end goal: if something is over 9000 characters long, we
             # should post a top level comment, then keep replying to
             # the comments we make until we run out of chunks.
