@@ -126,7 +126,7 @@ def noop(*args: Any) -> None:
 
 def main():
     opt = parse_arguments()
-    config.ocr_delay = 2
+    config.ocr_delay = 10
     config.debug_mode = opt.debug
     bot_name = "debug" if config.debug_mode else os.environ.get("BOT_NAME", "tor_ocr")
 
