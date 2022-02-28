@@ -9,5 +9,5 @@ base_comment = (
 
 reply_response = (
     'Hello, I do not respond to commands. Perhaps you meant to reply to '
-    'u/transcribersofreddit instead.'
+    r'u\/transcribersofreddit instead.'
 )
