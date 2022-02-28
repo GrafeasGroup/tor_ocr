@@ -6,6 +6,7 @@ means we will never make a backwards-incompatible change within a major version 
 ## [UNRELEASED]
 
 - "Source" link in the bot footer now redirects to this repo instead of the u/tor one
+- Added processing for inbox, respond to a user replying to bot's comment (credit: @crhopkins)
 
 ## [0.2.3] -- 2021-04-05
 

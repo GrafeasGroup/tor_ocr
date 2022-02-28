@@ -13,6 +13,7 @@ from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
 from tor_ocr.core.initialize import build_bot
 from tor_ocr.strings import base_comment
+from tor_ocr.core.inbox import check_inbox
 
 """
 General notes for implementation.
@@ -117,6 +118,8 @@ def run(config: Config) -> None:
             f"transcription/{ocr_obj['transcription__id']}/",
             data={"original_id": comment_id_list[1]},
         )
+
+    check_inbox(config)
 
 
 def noop(*args: Any) -> None:

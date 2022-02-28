@@ -6,3 +6,8 @@ base_comment = (
     'override whatever I provide, so please format my content accordingly '
     'if you choose to use it. '
 )
+
+reply_response = (
+    'Hello, I do not respond to commands. Perhaps you meant to reply to '
+    r'u\/transcribersofreddit instead.'
+)
