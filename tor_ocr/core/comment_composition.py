@@ -5,7 +5,7 @@ from typing import List
 
 from tor_ocr.core.helpers import _
 
-AUTOLINK_REGEX_SINGLE_PREFIX = re.compile(r"(?P<type>[ur])/(?P<name>\S+)")
+AUTOLINK_REGEX_SINGLE_PREFIX = re.compile(r"(?<!/)(?P<type>[ur])/(?P<name>\S+)")
 # Regex to detect autolinks with a double prefix, e.g. /u/username or /r/subname
 AUTOLINK_REGEX_DOUBLE_PREFIX = re.compile(r"/(?P<type>[ur])/(?P<name>\S+)")
 
@@ -21,6 +21,7 @@ def escape_formatting(text: str) -> str:
         .replace("*", r"\*")
         .replace("_", r"\_")
         .replace("#", r"\#")
+        .replace(">", r"\>")
     )
 
     # Sub- and usernames
@@ -37,7 +38,7 @@ def code_block(text: str) -> str:
     We do not use fenced codeblocks, as they are not supported
     on all devices.
     """
-    lines = "\n".split(text)
+    lines = text.split("\n")
     code_lines = [f"    {line}" for line in lines]
     return "\n".join(code_lines)
 
@@ -66,12 +67,15 @@ def compose_comments(text: str) -> List[str]:
     comments = []
     cur_comment_lines = []
 
-    for line in "\n".split(escaped_text):
+    for line in escaped_text.split("\n"):
         if not can_fit_in_comment(cur_comment_lines, line):
             # Create a new comment
             comments.append(compose_comment(cur_comment_lines))
             cur_comment_lines = []
 
         cur_comment_lines.append(line)
+
+    # Add last comment
+    comments.append(compose_comment(cur_comment_lines))
 
     return comments
