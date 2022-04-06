@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 import dotenv
 import praw
 
+from tor_ocr.core.comment_composition import compose_comments
 from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
 from tor_ocr.core.initialize import build_bot
@@ -74,7 +75,7 @@ def run(config: Config) -> None:
 
     new_posts: Optional[
         List[Dict[str, Any]]
-    ] = config.blossom.get_ocr_transcriptions().data['data']
+    ] = config.blossom.get_ocr_transcriptions().data["data"]
     if len(new_posts) == 0:
         logging.debug("No new posts found; sleeping.")
         return
@@ -106,11 +107,13 @@ def run(config: Config) -> None:
         # be object 1 in the list (object 0 is the "hi I'm a bot" message).
         comment_id_list = [thing_to_reply_to.fullname]
 
-        for chunk in chunks(ocr_obj["transcription__text"], 9000):
-            # end goal: if something is over 9000 characters long, we
-            # should post a top level comment, then keep replying to
-            # the comments we make until we run out of chunks.
-            thing_to_reply_to = thing_to_reply_to.reply(_(chunk))
+        # Split the text into multiple comments if necessary, escape formatting
+        # and add the footer to each comment
+        comment_texts = compose_comments(ocr_obj["transcription__text"])
+
+        for comment_text in comment_texts:
+            # Create a comment chain with the OCR text
+            thing_to_reply_to = thing_to_reply_to.reply(comment_text)
             comment_id_list += [thing_to_reply_to.fullname]
 
         logging.info(f"Patching {ocr_obj['transcription__id']}...")
