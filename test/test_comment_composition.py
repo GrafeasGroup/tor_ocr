@@ -61,11 +61,16 @@ def test_code_block() -> None:
 
 def test_compose_comments_single() -> None:
     """Test that the text is included in the comment."""
-    text = "This is a nice test text."
+    text = """This is a nice test text.
+It has **bold** text and a u/username.
+#hashtag we like hashtags."""
+    expected = r"""    This is a nice test text.
+    It has \*\*bold\*\* text and a u\/username.
+    \#hashtag we like hashtags."""
     actual = compose_comments(text)
 
     assert len(actual) == 1
-    assert text in actual[0]
+    assert actual[0].startswith(expected)
 
 
 def test_compose_comments_multiple() -> None:
