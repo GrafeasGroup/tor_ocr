@@ -31,7 +31,7 @@ dotenv.load_dotenv()
 NOOP_MODE = bool(os.getenv("NOOP_MODE", ""))
 DEBUG_MODE = bool(os.getenv("DEBUG_MODE", ""))
 
-__VERSION__ = "0.3.0"
+__VERSION__ = "0.4.0"
 
 
 def parse_arguments():
