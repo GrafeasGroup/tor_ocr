@@ -60,6 +60,6 @@ def check_inbox(config: Config) -> None:
                 process_message(item)
 
         # Mark as read so we don't process it again
-        item.mark_read
+        item.mark_read()
 
     log.info("processed inbox")

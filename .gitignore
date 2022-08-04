@@ -107,3 +107,7 @@ heartbeat.port
 .vscode
 
 test.py
+
+# build artifacts
+tor_ocr.pyz
+setup.py

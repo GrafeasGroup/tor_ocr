@@ -1,14 +1,18 @@
-import argparse
 import logging
 import os
+import pathlib
+import sys
 import time
 from typing import Any, List
 from typing import Dict, Optional
 from urllib.parse import urlparse
 
+import click
+from click.core import Context
 import dotenv
 import praw
 
+from tor_ocr import __version__
 from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
 from tor_ocr.core.initialize import build_bot
@@ -29,27 +33,6 @@ dotenv.load_dotenv()
 
 NOOP_MODE = bool(os.getenv("NOOP_MODE", ""))
 DEBUG_MODE = bool(os.getenv("DEBUG_MODE", ""))
-
-__VERSION__ = "0.3.0"
-
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("--version", action="version", version=__VERSION__)
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        default=DEBUG_MODE,
-        help="Puts bot in dev-mode using non-prod credentials",
-    )
-    parser.add_argument(
-        "--noop",
-        action="store_true",
-        default=NOOP_MODE,
-        help="Just run the daemon, but take no action (helpful for testing infrastructure changes)",
-    )
-
-    return parser.parse_args()
 
 
 def chunks(s: str, n: int) -> str:
@@ -122,22 +105,96 @@ def run(config: Config) -> None:
     check_inbox(config)
 
 
-def noop(*args: Any) -> None:
+def run_noop(*args: Any) -> None:
     time.sleep(5)
     logging.info("Loop!")
 
 
-def main():
-    opt = parse_arguments()
+@click.group(
+    context_settings=dict(help_option_names=["-h", "--help", "--halp"]),
+    invoke_without_command=True,
+)
+@click.pass_context
+@click.option(
+    "-d",
+    "--debug",
+    "debug",
+    is_flag=True,
+    default=DEBUG_MODE,
+    help="Puts bot in dev-mode using non-prod credentials",
+)
+@click.option(
+    "-n",
+    "--noop",
+    "noop",
+    is_flag=True,
+    default=NOOP_MODE,
+    help="Just run the daemon, but take no action (helpful for testing infrastructure changes)",
+)
+@click.version_option(version=__version__, prog_name="tor_ocr")
+def main(ctx: Context, debug, noop):
+    """Run ToR OCR."""
+    if ctx.invoked_subcommand:
+        # If we asked for a specific command, don't run the bot. Instead, pass control
+        # directly to the subcommand.
+        return
+
     config.ocr_delay = 10
-    config.debug_mode = opt.debug
+    config.debug_mode = debug
     bot_name = "debug" if config.debug_mode else os.environ.get("BOT_NAME", "tor_ocr")
 
-    build_bot(bot_name, __VERSION__)
-    if opt.noop:
-        run_until_dead(noop)
+    build_bot(bot_name, __version__)
+    if noop:
+        run_until_dead(run_noop)
     else:
         run_until_dead(run)
+
+
+@main.command()
+@click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="Show Pytest output instead of running quietly.",
+)
+def selfcheck(verbose: bool) -> None:
+    """
+    Verify the binary passes all tests internally.
+
+    Add any other self-check related code here.
+    """
+    import pytest
+
+    import tor_ocr.test
+
+    # -x is 'exit immediately if a test fails'
+    # We need to get the path because the file is actually inside the extracted
+    # environment maintained by shiv, not physically inside the archive at the
+    # time of running.
+    args = ["-x", str(pathlib.Path(tor_ocr.test.__file__).parent)]
+    if not verbose:
+        args.append("-qq")
+    # pytest will return an exit code that we can check on the command line
+    sys.exit(pytest.main(args))
+
+
+BANNER = r"""
+___________   __________     ________  ___________________
+\__    ___/___\______   \    \_____  \ \_   ___ \______   \
+  |    | /  _ \|       _/     /   |   \/    \  \/|       _/
+  |    |(  <_> )    |   \    /    |    \     \___|    |   \
+  |____| \____/|____|_  /____\_______  /\______  /____|_  /
+                      \/_____/       \/        \/       \/
+"""
+
+
+@main.command()
+def shell() -> None:
+    """Create a Python REPL inside the environment."""
+    import code
+
+    code.interact(local=globals(), banner=BANNER)
 
 
 if __name__ == "__main__":
