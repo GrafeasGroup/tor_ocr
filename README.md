@@ -1,4 +1,3 @@
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/TranscribersOfReddit/TranscribersOfReddit.svg?columns=all)](http://waffle.io/TranscribersOfReddit/TranscribersOfReddit)
 [![BugSnag](https://img.shields.io/badge/errors--hosted--by-Bugsnag-blue.svg)](https://www.bugsnag.com/open-source/)
 
 # Apprentice Bot - Transcribers Of Reddit
@@ -17,15 +16,6 @@ be a start to a more legitimate, volunteer-written transcription.
 > contains information such as the useragents and certain secrets. It is built
 > for Python 3.8.
 
-## Installation
-
-From release, download the [latest release](https://github.com/GrafeasGroup/tor_ocr/releases/latest) and `pip install` the wheel attached to it.
-
-```
-$ curl -SLo ./tor_ocr.whl https://github.com/GrafeasGroup/tor_ocr/releases/download/v0.2.1/tor_ocr-0.2.1-py3-none-any.whl
-$ pip install ./tor_ocr.whl
-```
-
 If wanting to install from source, clone the repo, install [poetry](https://poetry.eustace.io), and run `poetry install`:
 
 ```
@@ -37,8 +27,6 @@ $ poetry install
 
 ## High-level functionality
 
-Monitoring daemon (via Redis queue):
-
 - Ask [Blossom](https://github.com/grafeasgroup/blossom) for posts that have an OCR transcription that hasn't been posted yet
   - Post OCR-ed content to post on /r/TranscribersOfReddit in 9000 character chunks, replying to previous comment when [over 9000][over-9000] characters
 
@@ -47,7 +35,7 @@ Monitoring daemon (via Redis queue):
 ### Running the Bot
 
 ```bash
-$ tor-apprentice
+$ ./tor_ocr.pyz
 # => [daemon mode + logging]
 ```
 
