@@ -8,16 +8,17 @@ from typing import Dict, Optional
 from urllib.parse import urlparse
 
 import click
-from click.core import Context
 import dotenv
 import praw
+from click.core import Context
+from shiv.bootstrap import current_zipfile
 
 from tor_ocr import __version__
 from tor_ocr.core.config import config, Config
 from tor_ocr.core.helpers import _, run_until_dead
+from tor_ocr.core.inbox import check_inbox
 from tor_ocr.core.initialize import build_bot
 from tor_ocr.strings import base_comment
-from tor_ocr.core.inbox import check_inbox
 
 """
 General notes for implementation.
@@ -29,7 +30,15 @@ Reach out to Blossom for post objects
 - post the auto-generated OCR text on each submission
 - patch back the reddit ID of the primary comment back to Blossom
 """
-dotenv.load_dotenv()
+
+with current_zipfile() as archive:
+    if archive:
+        # if archive is none, we're not in the zipfile and are probably
+        # in development mode right now.
+        dotenv_path = str(pathlib.Path(archive.filename).parent / ".env")
+    else:
+        dotenv_path = None
+dotenv.load_dotenv(dotenv_path=dotenv_path)
 
 NOOP_MODE = bool(os.getenv("NOOP_MODE", ""))
 DEBUG_MODE = bool(os.getenv("DEBUG_MODE", ""))
@@ -43,7 +52,7 @@ def chunks(s: str, n: int) -> str:
     :param n: number of characters to cut the chunk at.
     """
     for start in range(0, len(s), n):
-        yield s[start : (start + n)]
+        yield s[start: (start + n)]
 
 
 def get_id_from_url(url: str) -> int:
