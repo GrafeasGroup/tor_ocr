@@ -32,7 +32,7 @@ black = "^22.6.0"
 flake8 = "^5.0.4"
 mypy = "^0.971"
 poetry = "^1.1.14"
-poetry2setup = "^1.0.0"
+poetry2setup = { git = "https://github.com/abersheeran/poetry2setup", branch = "master" }
 pytest-cov = "^3.0.0"
 
 [tool.poetry.plugins."console_scripts"]
