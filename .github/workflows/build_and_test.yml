@@ -1,9 +1,6 @@
-name: Release
+name: Build tor_ocr.pyz and test
 
-on:
-  push:
-    branches:
-      - main
+on: [pull_request]
 
 jobs:
   build:
@@ -31,11 +28,7 @@ jobs:
       run: |
         sed -i -e "s/?????/${{ env.CURRENT_TIME_VERSION }}/g" tor_ocr/__init__.py
         make build
-    - uses: ncipollo/release-action@v1
-      with:
-        artifacts: "build/tor_ocr.pyz"
-        body: "It's releasin' time"
-        generateReleaseNotes: true
-        tag: ${{ env.CURRENT_TIME_VERSION }}
-        commit: main
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Remove source to make sure it doesn't interfere with the tests
+      run: rm -rf tor_ocr/
+    - name: Run selfcheck on compiled binary
+      run: ./build/tor_ocr.pyz selfcheck
